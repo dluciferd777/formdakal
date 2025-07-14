@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.formdakal"
-        minSdk = 21
+        minSdk = 23
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -33,7 +33,6 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = true
-            // isShrinkResources = true  // Kapatıldı
             signingConfig = signingConfigs.getByName("debug")
         }
         debug {
