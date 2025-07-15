@@ -32,11 +32,32 @@ class UserModel {
   bool allowFriendRequests;
   String? bio;
 
-  // YENİ EKLENEN ALANLAR
+  // MEVCUT SOSYAL MEDYA ALANLARI
   String? favoriteTeam;
   String? country;
   String? instagram;
   String? twitter;
+  
+  // YENİ EKLENEN SOSYAL MEDYA ALANLARI
+  String? youtube;
+  String? facebook;
+  String? tiktok;
+  String? linkedin;
+  String? github;
+  String? discord;
+  String? twitch;
+  String? snapchat;
+  String? telegram;
+  String? whatsapp;
+  String? spotify;
+  String? pinterest;
+  String? reddit;
+  String? website;
+  String? email;
+  
+  // YENİ FAVORİ ALANLAR
+  String? favoriteSport;
+  String? favoriteMeal;
   
   // TAKİP SİSTEMİ İÇİN EKLENDİ
   bool isFollowing;
@@ -63,11 +84,30 @@ class UserModel {
     this.isProfilePublic = true,
     this.allowFriendRequests = true,
     this.bio,
-    // YENİ EKLENEN ALANLAR
+    // MEVCUT SOSYAL MEDYA ALANLARI
     this.favoriteTeam,
     this.country,
     this.instagram,
     this.twitter,
+    // YENİ EKLENEN SOSYAL MEDYA ALANLARI
+    this.youtube,
+    this.facebook,
+    this.tiktok,
+    this.linkedin,
+    this.github,
+    this.discord,
+    this.twitch,
+    this.snapchat,
+    this.telegram,
+    this.whatsapp,
+    this.spotify,
+    this.pinterest,
+    this.reddit,
+    this.website,
+    this.email,
+    // YENİ FAVORİ ALANLAR
+    this.favoriteSport,
+    this.favoriteMeal,
     // TAKİP SİSTEMİ İÇİN EKLENDİ
     this.isFollowing = false,
   }) : 
@@ -75,6 +115,31 @@ class UserModel {
     friendsList = friendsList ?? [],
     friendRequests = friendRequests ?? [],
     sentRequests = sentRequests ?? [];
+
+  // Tüm sosyal medya linklerini Map olarak döndürür
+  Map<String, String> get allSocialLinks {
+    final Map<String, String> links = {};
+    
+    if (instagram != null && instagram!.isNotEmpty) links['instagram'] = instagram!;
+    if (twitter != null && twitter!.isNotEmpty) links['twitter'] = twitter!;
+    if (youtube != null && youtube!.isNotEmpty) links['youtube'] = youtube!;
+    if (facebook != null && facebook!.isNotEmpty) links['facebook'] = facebook!;
+    if (tiktok != null && tiktok!.isNotEmpty) links['tiktok'] = tiktok!;
+    if (linkedin != null && linkedin!.isNotEmpty) links['linkedin'] = linkedin!;
+    if (github != null && github!.isNotEmpty) links['github'] = github!;
+    if (discord != null && discord!.isNotEmpty) links['discord'] = discord!;
+    if (twitch != null && twitch!.isNotEmpty) links['twitch'] = twitch!;
+    if (snapchat != null && snapchat!.isNotEmpty) links['snapchat'] = snapchat!;
+    if (telegram != null && telegram!.isNotEmpty) links['telegram'] = telegram!;
+    if (whatsapp != null && whatsapp!.isNotEmpty) links['whatsapp'] = whatsapp!;
+    if (spotify != null && spotify!.isNotEmpty) links['spotify'] = spotify!;
+    if (pinterest != null && pinterest!.isNotEmpty) links['pinterest'] = pinterest!;
+    if (reddit != null && reddit!.isNotEmpty) links['reddit'] = reddit!;
+    if (website != null && website!.isNotEmpty) links['website'] = website!;
+    if (email != null && email!.isNotEmpty) links['email'] = email!;
+    
+    return links;
+  }
 
   // Günlük kalori ihtiyacı hesaplama
   double get dailyCalorieNeeds {
@@ -203,11 +268,30 @@ class UserModel {
       'isProfilePublic': isProfilePublic,
       'allowFriendRequests': allowFriendRequests,
       'bio': bio,
-      // YENİ EKLENEN ALANLAR
+      // MEVCUT SOSYAL MEDYA ALANLARI
       'favoriteTeam': favoriteTeam,
       'country': country,
       'instagram': instagram,
       'twitter': twitter,
+      // YENİ EKLENEN SOSYAL MEDYA ALANLARI
+      'youtube': youtube,
+      'facebook': facebook,
+      'tiktok': tiktok,
+      'linkedin': linkedin,
+      'github': github,
+      'discord': discord,
+      'twitch': twitch,
+      'snapchat': snapchat,
+      'telegram': telegram,
+      'whatsapp': whatsapp,
+      'spotify': spotify,
+      'pinterest': pinterest,
+      'reddit': reddit,
+      'website': website,
+      'email': email,
+      // YENİ FAVORİ ALANLAR
+      'favoriteSport': favoriteSport,
+      'favoriteMeal': favoriteMeal,
       // TAKİP SİSTEMİ İÇİN EKLENDİ
       'isFollowing': isFollowing,
     };
@@ -236,11 +320,30 @@ class UserModel {
       isProfilePublic: json['isProfilePublic'] ?? true,
       allowFriendRequests: json['allowFriendRequests'] ?? true,
       bio: json['bio'],
-      // YENİ EKLENEN ALANLAR
+      // MEVCUT SOSYAL MEDYA ALANLARI
       favoriteTeam: json['favoriteTeam'],
       country: json['country'],
       instagram: json['instagram'],
       twitter: json['twitter'],
+      // YENİ EKLENEN SOSYAL MEDYA ALANLARI
+      youtube: json['youtube'],
+      facebook: json['facebook'],
+      tiktok: json['tiktok'],
+      linkedin: json['linkedin'],
+      github: json['github'],
+      discord: json['discord'],
+      twitch: json['twitch'],
+      snapchat: json['snapchat'],
+      telegram: json['telegram'],
+      whatsapp: json['whatsapp'],
+      spotify: json['spotify'],
+      pinterest: json['pinterest'],
+      reddit: json['reddit'],
+      website: json['website'],
+      email: json['email'],
+      // YENİ FAVORİ ALANLAR
+      favoriteSport: json['favoriteSport'],
+      favoriteMeal: json['favoriteMeal'],
       // TAKİP SİSTEMİ İÇİN EKLENDİ
       isFollowing: json['isFollowing'] ?? false,
     );
@@ -280,11 +383,30 @@ class UserModel {
     bool? isProfilePublic,
     bool? allowFriendRequests,
     String? bio,
-    // YENİ EKLENEN ALANLAR
+    // MEVCUT SOSYAL MEDYA ALANLARI
     String? favoriteTeam,
     String? country,
     String? instagram,
     String? twitter,
+    // YENİ EKLENEN SOSYAL MEDYA ALANLARI
+    String? youtube,
+    String? facebook,
+    String? tiktok,
+    String? linkedin,
+    String? github,
+    String? discord,
+    String? twitch,
+    String? snapchat,
+    String? telegram,
+    String? whatsapp,
+    String? spotify,
+    String? pinterest,
+    String? reddit,
+    String? website,
+    String? email,
+    // YENİ FAVORİ ALANLAR
+    String? favoriteSport,
+    String? favoriteMeal,
     // TAKİP SİSTEMİ İÇİN EKLENDİ
     bool? isFollowing,
   }) {
@@ -310,11 +432,30 @@ class UserModel {
       isProfilePublic: isProfilePublic ?? this.isProfilePublic,
       allowFriendRequests: allowFriendRequests ?? this.allowFriendRequests,
       bio: bio ?? this.bio,
-      // YENİ EKLENEN ALANLAR
+      // MEVCUT SOSYAL MEDYA ALANLARI
       favoriteTeam: favoriteTeam ?? this.favoriteTeam,
       country: country ?? this.country,
       instagram: instagram ?? this.instagram,
       twitter: twitter ?? this.twitter,
+      // YENİ EKLENEN SOSYAL MEDYA ALANLARI
+      youtube: youtube ?? this.youtube,
+      facebook: facebook ?? this.facebook,
+      tiktok: tiktok ?? this.tiktok,
+      linkedin: linkedin ?? this.linkedin,
+      github: github ?? this.github,
+      discord: discord ?? this.discord,
+      twitch: twitch ?? this.twitch,
+      snapchat: snapchat ?? this.snapchat,
+      telegram: telegram ?? this.telegram,
+      whatsapp: whatsapp ?? this.whatsapp,
+      spotify: spotify ?? this.spotify,
+      pinterest: pinterest ?? this.pinterest,
+      reddit: reddit ?? this.reddit,
+      website: website ?? this.website,
+      email: email ?? this.email,
+      // YENİ FAVORİ ALANLAR
+      favoriteSport: favoriteSport ?? this.favoriteSport,
+      favoriteMeal: favoriteMeal ?? this.favoriteMeal,
       // TAKİP SİSTEMİ İÇİN EKLENDİ
       isFollowing: isFollowing ?? this.isFollowing,
     );

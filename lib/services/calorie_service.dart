@@ -1,4 +1,4 @@
-// lib/services/calorie_service.dart
+// lib/services/calorie_service.dart - GELİŞTİRİLMİŞ ADIM KALORİ HESAPLAMASI
 import 'dart:math';
 
 class CalorieService {
@@ -88,14 +88,10 @@ class CalorieService {
     required int durationMinutes,
     double? speed,
     double? incline,
-    // double? metValueOverride, // KALDIRILDI: İsteğe bağlı MET değeri geçersiz kılma
   }) {
     double metValue;
-    // if (metValueOverride != null && metValueOverride > 0) { // KALDIRILDI: Eğer bir MET değeri geçersiz kılma sağlanmışsa, onu kullan
-    //   metValue = metValueOverride;
-    // } else
     if (exerciseType.contains('treadmill') && speed != null) {
-      // Treadmill için özel MET hesaplaması (eğer geçersiz kılma yoksa)
+      // Treadmill için özel MET hesaplaması
       metValue = _calculateTreadmillMET(speed, incline ?? 0.0);
     } else {
       // Diğer kardiyo türleri için sabit MET değerleri (yaklaşık değerler)
@@ -117,22 +113,181 @@ class CalorieService {
     return metValue * userWeight * hours;
   }
 
-  static double calculateEnhancedExerciseCalories({ required double metValue, required double userWeight, required int sets, required int reps, required double? weightKg, int restBetweenSets = 60 }) {
+  static double calculateEnhancedExerciseCalories({ 
+    required double metValue, 
+    required double userWeight, 
+    required int sets, 
+    required int reps, 
+    required double? weightKg, 
+    int restBetweenSets = 60 
+  }) {
     // Kuvvet antrenmanları için daha detaylı kalori hesaplaması
-    // Tahmini antrenman süresi: (set * tekrar * her tekrar süresi) + (setler arası dinlenme)
-    // Her tekrarın ortalama 2.5 saniye sürdüğü varsayıldı.
     double totalSeconds = (sets * reps * 2.5) + (max(0, sets - 1) * restBetweenSets);
     double hours = totalSeconds / 3600; // Saniyeyi saate çevir
     // Kalori = MET * Vücut Ağırlığı (kg) * Süre (saat)
     return metValue * userWeight * hours;
   }
 
+  // ESKİ VERSİYON: Basit hesaplama
   static double calculateStepCalories(int steps, double weightKg) {
-    // Adım başına kalori yakımını hesaplar (yaklaşık değer)
-    // Ortalama bir adımın 0.75 metre olduğu ve 1 kg ağırlık için 1 km'de 1 kalori yakıldığı varsayımıyla.
-    // Formül: Adım Sayısı * (0.75 m / adım) * (1 kalori / kg / km) * (1 km / 1000 m) * (Vücut Ağırlığı / Referans Ağırlık)
-    // Basitleştirilmiş katsayı: 0.045 = (0.75 * 1 / 1000) * (70kg referans)
+    // Basit formül - geriye dönük uyumluluk için korundu
     return steps * 0.045 * (weightKg / 70.0); // 70 kg referans alındı
+  }
+
+  // YENİ VERSİYON: Gelişmiş adım kalori hesaplaması
+  static double calculateAdvancedStepCalories({
+    required int steps,
+    required double weight, // kg
+    required double height, // cm
+    required int age,
+    required String gender,
+    required String activityLevel,
+  }) {
+    // 1. ADIM UZUNLUĞU HESAPLAMASI (Cinsiyete göre)
+    double strideLength;
+    if (gender == 'male') {
+      strideLength = height * 0.415; // Erkekler için
+    } else {
+      strideLength = height * 0.413; // Kadınlar için
+    }
+    
+    // 2. MESAFE VE HIZ HESAPLAMASI
+    final double distanceMeters = (steps * strideLength) / 100;
+    final double timeHours = (steps / 1000.0) * (10.0 / 60.0); // 1000 adım = 10 dakika
+    final double speedKmh = timeHours > 0 ? (distanceMeters / 1000) / timeHours : 3.0;
+    
+    // 3. YAŞA GÖRE DÜZELTME
+    double ageAdjustment = 1.0;
+    if (age < 20) {
+      ageAdjustment = 1.1; // Gençler daha aktif
+    } else if (age > 60) {
+      ageAdjustment = 0.9; // Yaşlılar daha az kalori yakar
+    } else if (age > 40) {
+      ageAdjustment = 0.95; // Orta yaş
+    }
+    
+    // 4. BMI'YE GÖRE DÜZELTME
+    final double bmi = weight / pow(height / 100, 2);
+    double bmiAdjustment = 1.0;
+    if (bmi < 18.5) {
+      bmiAdjustment = 0.9; // Zayıf kişiler daha az kalori yakar
+    } else if (bmi > 30) {
+      bmiAdjustment = 1.15; // Obez kişiler daha fazla kalori yakar
+    } else if (bmi > 25) {
+      bmiAdjustment = 1.05; // Kilolu kişiler biraz daha fazla
+    }
+    
+    // 5. CİNSİYETE GÖRE DÜZELTME
+    double genderAdjustment = gender == 'male' ? 1.0 : 0.85; // Kadınlar %15 daha az
+    
+    // 6. AKTİVİTE SEVİYESİNE GÖRE DÜZELTME
+    double activityAdjustment = 1.0;
+    switch (activityLevel) {
+      case 'sedentary':
+        activityAdjustment = 0.9;
+        break;
+      case 'lightly_active':
+        activityAdjustment = 0.95;
+        break;
+      case 'moderately_active':
+        activityAdjustment = 1.0; // Standart
+        break;
+      case 'very_active':
+        activityAdjustment = 1.05;
+        break;
+      case 'extremely_active':
+        activityAdjustment = 1.1;
+        break;
+    }
+    
+    // 7. HIZA GÖRE MET DEĞERİ
+    double baseMET;
+    if (speedKmh < 2.5) {
+      baseMET = 2.0; // Çok yavaş yürüyüş
+    } else if (speedKmh < 4.0) {
+      baseMET = 3.5; // Yavaş yürüyüş
+    } else if (speedKmh < 5.5) {
+      baseMET = 4.3; // Normal yürüyüş
+    } else if (speedKmh < 6.5) {
+      baseMET = 5.0; // Hızlı yürüyüş
+    } else {
+      baseMET = 6.0; // Çok hızlı yürüyüş/hafif koşu
+    }
+    
+    // 8. TÜM DÜZELTME FAKTÖRLERINI UYGULA
+    final double adjustedMET = baseMET * 
+        ageAdjustment * 
+        bmiAdjustment * 
+        genderAdjustment * 
+        activityAdjustment;
+    
+    // 9. KALORI HESAPLAMASI
+    return adjustedMET * weight * timeHours;
+  }
+
+  // YENİ: Adım kalori hesaplama detayları
+  static Map<String, dynamic> getStepCalorieDetails({
+    required int steps,
+    required double weight,
+    required double height,
+    required int age,
+    required String gender,
+    required String activityLevel,
+  }) {
+    // Hesaplama adımları
+    final double strideLength = gender == 'male' ? height * 0.415 : height * 0.413;
+    final double distanceKm = (steps * strideLength / 100) / 1000;
+    final double timeHours = (steps / 1000.0) * (10.0 / 60.0);
+    final double speedKmh = timeHours > 0 ? distanceKm / timeHours : 3.0;
+    final double bmi = weight / pow(height / 100, 2);
+    
+    // Düzeltme faktörleri
+    double ageAdjustment = 1.0;
+    if (age < 20) ageAdjustment = 1.1;
+    else if (age > 60) ageAdjustment = 0.9;
+    else if (age > 40) ageAdjustment = 0.95;
+    
+    double bmiAdjustment = 1.0;
+    if (bmi < 18.5) bmiAdjustment = 0.9;
+    else if (bmi > 30) bmiAdjustment = 1.15;
+    else if (bmi > 25) bmiAdjustment = 1.05;
+    
+    double genderAdjustment = gender == 'male' ? 1.0 : 0.85;
+    
+    double activityAdjustment = 1.0;
+    switch (activityLevel) {
+      case 'sedentary': activityAdjustment = 0.9; break;
+      case 'lightly_active': activityAdjustment = 0.95; break;
+      case 'very_active': activityAdjustment = 1.05; break;
+      case 'extremely_active': activityAdjustment = 1.1; break;
+    }
+    
+    // Base MET
+    double baseMET;
+    if (speedKmh < 2.5) baseMET = 2.0;
+    else if (speedKmh < 4.0) baseMET = 3.5;
+    else if (speedKmh < 5.5) baseMET = 4.3;
+    else if (speedKmh < 6.5) baseMET = 5.0;
+    else baseMET = 6.0;
+    
+    final double adjustedMET = baseMET * ageAdjustment * bmiAdjustment * genderAdjustment * activityAdjustment;
+    final double calories = adjustedMET * weight * timeHours;
+    
+    return {
+      'steps': steps,
+      'strideLength': '${strideLength.toStringAsFixed(1)} cm',
+      'distance': '${distanceKm.toStringAsFixed(2)} km',
+      'time': '${(timeHours * 60).toStringAsFixed(0)} dakika',
+      'speed': '${speedKmh.toStringAsFixed(1)} km/h',
+      'bmi': bmi.toStringAsFixed(1),
+      'baseMET': baseMET.toStringAsFixed(1),
+      'ageAdjustment': 'x${ageAdjustment.toStringAsFixed(2)}',
+      'bmiAdjustment': 'x${bmiAdjustment.toStringAsFixed(2)}',
+      'genderAdjustment': 'x${genderAdjustment.toStringAsFixed(2)}',
+      'activityAdjustment': 'x${activityAdjustment.toStringAsFixed(2)}',
+      'finalMET': adjustedMET.toStringAsFixed(2),
+      'calories': calories.toStringAsFixed(0),
+    };
   }
 
   static double calculateBMI(double weightKg, double heightCm) {
@@ -156,12 +311,15 @@ class CalorieService {
   
   static int estimateExerciseDuration(int sets, int reps) {
     // Basit bir yaklaşımla egzersiz süresi tahmini (dakika)
-    // Her tekrarın 2.5 saniye sürdüğü ve her set arasında 30 saniye dinlenme olduğu varsayıldı.
     double totalSeconds = (sets * reps * 2.5) + (max(0, sets - 1) * 30);
     return (totalSeconds / 60).ceil(); // Saniyeyi dakikaya çevir ve yukarı yuvarla
   }
   
-  static double calculateDailyProteinNeeds({ required double weight, required String activityLevel, required String goal,}) {
+  static double calculateDailyProteinNeeds({ 
+    required double weight, 
+    required String activityLevel, 
+    required String goal,
+  }) {
     double proteinPerKg; // Kilo başına protein ihtiyacı (gram)
     if (goal == 'gain_muscle' || goal == 'lose_weight_gain_muscle' || activityLevel == 'very_active' || activityLevel == 'extremely_active') {
       proteinPerKg = 1.8; // Kas yapımı veya yüksek aktivite için daha yüksek protein
@@ -178,7 +336,11 @@ class CalorieService {
     return (dailyCalorieNeeds * 0.25) / 9; // 1g yağ = 9 kalori
   }
 
-  static double calculateDailyCarbNeeds({required double dailyCalorieNeeds, required double proteinGrams, required double fatGrams}) {
+  static double calculateDailyCarbNeeds({
+    required double dailyCalorieNeeds, 
+    required double proteinGrams, 
+    required double fatGrams
+  }) {
     // Kalan kaloriler karbonhidrattan gelsin
     double caloriesFromProtein = proteinGrams * 4; // 1g protein = 4 kalori
     double caloriesFromFat = fatGrams * 9;     // 1g yağ = 9 kalori
@@ -186,7 +348,10 @@ class CalorieService {
     return remainingCalories / 4; // 1g karbonhidrat = 4 kalori
   }
 
-  static double calculateDailyWaterNeeds({ required double weight, required String activityLevel, }) {
+  static double calculateDailyWaterNeeds({ 
+    required double weight, 
+    required String activityLevel, 
+  }) {
     // Kilo başına 33ml su temel alınır.
     double baseWater = weight * 0.033; // Litre cinsinden
     // Aktivite seviyesine göre ek su ihtiyacı eklenir.

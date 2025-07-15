@@ -1,10 +1,11 @@
-// lib/widgets/advanced_step_counter_card.dart - KALORI DÜZELTMESİ
+// lib/widgets/advanced_step_counter_card.dart - KALORİ DÜZELTİLMİŞ
 import 'package:flutter/material.dart';
 import 'package:formdakal/widgets/activity_ring_painter.dart';
 import 'package:provider/provider.dart';
 import '../providers/user_provider.dart';
 import '../providers/food_provider.dart';
 import '../providers/step_counter_provider.dart';
+import '../services/calorie_service.dart';
 import '../utils/colors.dart';
 
 class AdvancedStepCounterCard extends StatelessWidget {
@@ -27,8 +28,23 @@ class AdvancedStepCounterCard extends StatelessWidget {
     final double consumedCalories = foodProvider.getDailyCalories(DateTime.now());
     final double foodCalorieProgress = (consumedCalories / dailyCalorieNeeds).clamp(0.0, 1.0);
 
-    // SADECE ADIMLARDAN YAKILAN KALORİ (Egzersiz kalori dahil değil!)
-    final double burnedCalories = steps * 0.045; // DEĞİŞTİRİLDİ: Sadece adımlardan kalori
+    // GELİŞMİŞ KALORİ HESAPLAMASI - Kullanıcı verilerine dayalı
+    double burnedCalories = 0.0;
+    if (user != null) {
+      // Yeni gelişmiş hesaplama fonksiyonunu kullan
+      burnedCalories = CalorieService.calculateAdvancedStepCalories(
+        steps: steps,
+        weight: user.weight,
+        height: user.height,
+        age: user.age,
+        gender: user.gender,
+        activityLevel: user.activityLevel,
+      );
+    } else {
+      // Fallback - basit hesaplama
+      burnedCalories = CalorieService.calculateStepCalories(steps, 70.0);
+    }
+
     final double fitnessCalorieGoal = dailyCalorieNeeds * 0.25; // %25'i fitness hedefi
     final double fitnessCalorieProgress = (burnedCalories / fitnessCalorieGoal).clamp(0.0, 1.0);
 
@@ -69,10 +85,20 @@ class AdvancedStepCounterCard extends StatelessWidget {
                       context,
                       icon: Icons.local_fire_department,
                       color: Colors.orange,
-                      label: 'Yakılan', // Bu artık sadece adımlardan yakılan kalori
+                      label: 'Yakılan',
                       value: '${burnedCalories.toInt()}',
                       target: '',
                     ),
+                    if (user != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        'Kişiselleştirilmiş hesaplama aktif',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
