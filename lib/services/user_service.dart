@@ -7,23 +7,32 @@ class UserService {
   final List<UserModel> _allUsers = [
     UserModel(
       name: 'Onur Yıldız',
-      userTag: 'onurstar',
+      userTag: 'ozyxgen',
       age: 26,
       gender: 'male',
-      height: 182,
+      height: 165,
       weight: 80,
       activityLevel: 'very_active',
       goal: 'gain_muscle',
       weeklyWorkoutDays: 5,
       country: 'İstanbul',
       favoriteTeam: 'Galatasaray',
-      instagram: 'onurstar',
+      instagram: 'ozyxgen',
       bio: 'Fitness tutkunu, 5 yıldır spor yapıyorum',
+      isFollowing: true, // Eklendi
+      favoriteMeal: 'Tavuklu Pilav', // Eklendi
+      favoriteSport: 'Fitness', // Eklendi
+      facebook: 'onur.yildiz', // Eklendi
+      tiktok: 'onurstar_tiktok', // Eklendi
+      kick: 'onurstar_kick', // Eklendi
+      twitch: 'ozyxgen_twitch', // Eklendi
+      discord: 'onurstar#1234', // Eklendi
+      whatsapp: '905551234567', // Eklendi
+      spotify: 'onurstar_spotify', // Eklendi
       profileImagePath: 'https://i.pravatar.cc/150?img=1',
-      isFollowing: true,
     ),
     UserModel(
-      name: 'Altuğ G.',
+      name: 'Altuğ Götten.',
       userTag: 'altug',
       age: 28,
       gender: 'male',
@@ -35,11 +44,13 @@ class UserService {
       country: 'Ankara',
       favoriteTeam: 'Beşiktaş',
       bio: 'Müzisyen',
+      isFollowing: false, // Eklendi
+      favoriteMeal: 'Mantı', // Eklendi
+      favoriteSport: 'Basketbol', // Eklendi
       profileImagePath: 'https://i.pravatar.cc/150?img=2',
-      isFollowing: false,
     ),
     UserModel(
-      name: 'Oğuz İ.',
+      name: 'Oğuz İbine.',
       userTag: 'oguz',
       age: 29,
       gender: 'male',
@@ -51,8 +62,10 @@ class UserService {
       country: 'İzmir',
       favoriteTeam: 'Fenerbahçe',
       bio: 'Sporcu',
+      isFollowing: true, // Eklendi
+      favoriteMeal: 'Köfte', // Eklendi
+      favoriteSport: 'Vücut Geliştirme', // Eklendi
       profileImagePath: 'https://i.pravatar.cc/150?img=3',
-      isFollowing: true,
     ),
     UserModel(
       name: 'Busechan',
@@ -68,8 +81,10 @@ class UserService {
       favoriteTeam: 'Bursaspor',
       instagram: 'busechan',
       bio: 'Influencer',
+      isFollowing: false, // Eklendi
+      favoriteMeal: 'Salata', // Eklendi
+      favoriteSport: 'Yoga', // Eklendi
       profileImagePath: 'https://i.pravatar.cc/150?img=4',
-      isFollowing: false,
     ),
     UserModel(
       name: 'Jahrein',
@@ -85,8 +100,10 @@ class UserService {
       favoriteTeam: 'Antalyaspor',
       twitter: 'jahrein',
       bio: 'Yayıncı',
+      isFollowing: true, // Eklendi
+      favoriteMeal: 'Hamburger', // Eklendi
+      favoriteSport: 'E-Spor', // Eklendi
       profileImagePath: 'https://i.pravatar.cc/150?img=5',
-      isFollowing: true,
     ),
     UserModel(
       name: 'Gojo Satoru',
@@ -101,8 +118,10 @@ class UserService {
       country: 'Tokyo',
       favoriteTeam: 'Kendisi',
       bio: 'Jujutsu Büyücüsü',
+      isFollowing: false, // Eklendi
+      favoriteMeal: 'Mochi', // Eklendi
+      favoriteSport: 'Jujutsu', // Eklendi
       profileImagePath: 'https://i.pravatar.cc/150?img=6',
-      isFollowing: false,
     ),
     UserModel(
       name: 'Yuji Itadori',
@@ -117,8 +136,10 @@ class UserService {
       country: 'Tokyo',
       favoriteTeam: 'Toudou',
       bio: 'Öğrenci',
+      isFollowing: true, // Eklendi
+      favoriteMeal: 'Ramen', // Eklendi
+      favoriteSport: 'Dövüş Sanatları', // Eklendi
       profileImagePath: 'https://i.pravatar.cc/150?img=7',
-      isFollowing: true,
     ),
     UserModel(
       name: 'Naruto Uzumaki',
@@ -133,8 +154,10 @@ class UserService {
       country: 'Konoha',
       favoriteTeam: 'Takım 7',
       bio: 'Hokage',
+      isFollowing: false, // Eklendi
+      favoriteMeal: 'Ramen', // Eklendi
+      favoriteSport: 'Ninja Eğitimi', // Eklendi
       profileImagePath: 'https://i.pravatar.cc/150?img=8',
-      isFollowing: false,
     ),
     UserModel(
       name: 'Sasuke Uchiha',
@@ -149,8 +172,10 @@ class UserService {
       country: 'Konoha',
       favoriteTeam: 'Taka',
       bio: 'Gölge Hokage',
+      isFollowing: false, // Eklendi
+      favoriteMeal: 'Onigiri', // Eklendi
+      favoriteSport: 'Kılıç Kullanımı', // Eklendi
       profileImagePath: 'https://i.pravatar.cc/150?img=9',
-      isFollowing: false,
     ),
     UserModel(
       name: 'Mashle Burndead',
@@ -165,8 +190,10 @@ class UserService {
       country: 'Büyü Dünyası',
       favoriteTeam: 'Adler Yurdu',
       bio: 'İlahi Görücü',
+      isFollowing: true, // Eklendi
+      favoriteMeal: 'Krem Puf', // Eklendi
+      favoriteSport: 'Ağırlık Kaldırma', // Eklendi
       profileImagePath: 'https://i.pravatar.cc/150?img=10',
-      isFollowing: true,
     ),
   ];
 

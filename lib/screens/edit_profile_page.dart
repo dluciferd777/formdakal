@@ -2,8 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 import '../providers/user_provider.dart';
 import '../utils/color_themes.dart';
 
@@ -16,9 +14,7 @@ class EditProfilePage extends StatefulWidget {
 
 class _EditProfilePageState extends State<EditProfilePage> {
   final _formKey = GlobalKey<FormState>();
-  final ImagePicker _picker = ImagePicker();
 
-  // Temel Bilgiler Controller'ları
   late TextEditingController _nameController;
   late TextEditingController _userTagController;
   late TextEditingController _ageController;
@@ -27,12 +23,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
   late TextEditingController _bioController;
   late TextEditingController _countryController;
 
-  // Favori Bilgiler Controller'ları
   late TextEditingController _favoriteMealController;
   late TextEditingController _favoriteSportController;
   late TextEditingController _favoriteTeamController;
 
-  // Sosyal Medya Controller'ları (9 platform)
   late TextEditingController _instagramController;
   late TextEditingController _twitterController;
   late TextEditingController _facebookController;
@@ -43,14 +37,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
   late TextEditingController _whatsappController;
   late TextEditingController _spotifyController;
 
-  // Aktivite Seviyesi ve Hedef
   String _selectedActivityLevel = 'moderately_active';
   String _selectedGoal = 'maintain';
   String _selectedGender = 'male';
   int _selectedWeeklyWorkoutDays = 3;
-
-  // Profil resmi
-  String? _profileImagePath;
 
   final List<Map<String, String>> _activityLevels = [
     {'value': 'sedentary', 'label': 'Hareketsiz (Ofis işi)'},
@@ -61,81 +51,52 @@ class _EditProfilePageState extends State<EditProfilePage> {
   ];
 
   final List<Map<String, String>> _goals = [
-    {'value': 'lose', 'label': 'Kilo Vermek'},
+    {'value': 'lose_weight', 'label': 'Kilo Vermek'},
     {'value': 'maintain', 'label': 'Kiloyu Korumak'},
-    {'value': 'gain', 'label': 'Kilo Almak'},
+    {'value': 'gain_weight', 'label': 'Kilo Almak'},
     {'value': 'lose_weight_gain_muscle', 'label': 'Kilo Ver & Kas Yap'},
   ];
 
   @override
   void initState() {
     super.initState();
+    _initializeControllers();
+  }
+
+  void _initializeControllers() {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final user = userProvider.user;
-    
-    if (user != null) {
-      // Temel Bilgiler
-      _nameController = TextEditingController(text: user.name);
-      _userTagController = TextEditingController(text: user.userTag);
-      _ageController = TextEditingController(text: user.age.toString());
-      _heightController = TextEditingController(text: user.height.toString());
-      _weightController = TextEditingController(text: user.weight.toString());
-      _bioController = TextEditingController(text: user.bio ?? '');
-      _countryController = TextEditingController(text: user.country ?? '');
 
-      // Favori Bilgiler
-      _favoriteMealController = TextEditingController(text: user.favoriteMeal ?? '');
-      _favoriteSportController = TextEditingController(text: user.favoriteSport ?? '');
-      _favoriteTeamController = TextEditingController(text: user.favoriteTeam ?? '');
+    _nameController = TextEditingController(text: user?.name ?? '');
+    _userTagController = TextEditingController(text: user?.userTag ?? '');
+    _ageController = TextEditingController(text: user?.age.toString() ?? '');
+    _heightController = TextEditingController(text: user?.height.toString() ?? '');
+    _weightController = TextEditingController(text: user?.weight.toString() ?? '');
+    _bioController = TextEditingController(text: user?.bio ?? '');
+    _countryController = TextEditingController(text: user?.country ?? '');
 
-      // Sosyal Medya (9 platform)
-      _instagramController = TextEditingController(text: user.instagram ?? '');
-      _twitterController = TextEditingController(text: user.twitter ?? '');
-      _facebookController = TextEditingController(text: user.facebook ?? '');
-      _tiktokController = TextEditingController(text: user.tiktok ?? '');
-      _kickController = TextEditingController(text: user.kick ?? '');
-      _twitchController = TextEditingController(text: user.twitch ?? '');
-      _discordController = TextEditingController(text: user.discord ?? '');
-      _whatsappController = TextEditingController(text: user.whatsapp ?? '');
-      _spotifyController = TextEditingController(text: user.spotify ?? '');
+    _favoriteMealController = TextEditingController(text: user?.favoriteMeal ?? '');
+    _favoriteSportController = TextEditingController(text: user?.favoriteSport ?? '');
+    _favoriteTeamController = TextEditingController(text: user?.favoriteTeam ?? '');
 
-      // Seçili değerler
-      _selectedActivityLevel = user.activityLevel;
-      _selectedGoal = user.goal;
-      _selectedGender = user.gender;
-      _selectedWeeklyWorkoutDays = user.weeklyWorkoutDays;
-      _profileImagePath = user.profileImagePath;
-    } else {
-      // Boş controller'lar
-      _nameController = TextEditingController();
-      _userTagController = TextEditingController();
-      _ageController = TextEditingController();
-      _heightController = TextEditingController();
-      _weightController = TextEditingController();
-      _bioController = TextEditingController();
-      _countryController = TextEditingController();
-      
-      // Boş favori bilgiler
-      _favoriteMealController = TextEditingController();
-      _favoriteSportController = TextEditingController();
-      _favoriteTeamController = TextEditingController();
-      
-      // Boş sosyal medya
-      _instagramController = TextEditingController();
-      _twitterController = TextEditingController();
-      _facebookController = TextEditingController();
-      _tiktokController = TextEditingController();
-      _kickController = TextEditingController();
-      _twitchController = TextEditingController();
-      _discordController = TextEditingController();
-      _whatsappController = TextEditingController();
-      _spotifyController = TextEditingController();
-    }
+    _instagramController = TextEditingController(text: user?.instagram ?? '');
+    _twitterController = TextEditingController(text: user?.twitter ?? '');
+    _facebookController = TextEditingController(text: user?.facebook ?? '');
+    _tiktokController = TextEditingController(text: user?.tiktok ?? '');
+    _kickController = TextEditingController(text: user?.kick ?? '');
+    _twitchController = TextEditingController(text: user?.twitch ?? '');
+    _discordController = TextEditingController(text: user?.discord ?? '');
+    _whatsappController = TextEditingController(text: user?.whatsapp ?? '');
+    _spotifyController = TextEditingController(text: user?.spotify ?? '');
+
+    _selectedActivityLevel = user?.activityLevel ?? 'moderately_active';
+    _selectedGoal = user?.goal ?? 'maintain';
+    _selectedGender = user?.gender ?? 'male';
+    _selectedWeeklyWorkoutDays = user?.weeklyWorkoutDays ?? 3;
   }
 
   @override
   void dispose() {
-    // Tüm controller'ları temizle
     _nameController.dispose();
     _userTagController.dispose();
     _ageController.dispose();
@@ -157,91 +118,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _spotifyController.dispose();
     super.dispose();
   }
-
-  // Profil resmi seçme
-  Future<void> _pickProfileImage() async {
-    try {
-      showModalBottomSheet(
-        context: context,
-        backgroundColor: Colors.transparent,
-        builder: (BuildContext bc) {
-          return Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            ),
-            child: SafeArea(
-              child: Wrap(
-                children: <Widget>[
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(20),
-                    child: const Text(
-                      'Profil Fotoğrafını Değiştir',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.photo_library),
-                    title: const Text('Galeriden Seç'),
-                    onTap: () async {
-                      Navigator.of(context).pop();
-                      final XFile? pickedFile = await _picker.pickImage(
-                        source: ImageSource.gallery,
-                        maxWidth: 512,
-                        maxHeight: 512,
-                        imageQuality: 85,
-                      );
-                      if (pickedFile != null) {
-                        setState(() {
-                          _profileImagePath = pickedFile.path;
-                        });
-                      }
-                    },
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.photo_camera),
-                    title: const Text('Kamera ile Çek'),
-                    onTap: () async {
-                      Navigator.of(context).pop();
-                      final XFile? pickedFile = await _picker.pickImage(
-                        source: ImageSource.camera,
-                        maxWidth: 512,
-                        maxHeight: 512,
-                        imageQuality: 85,
-                      );
-                      if (pickedFile != null) {
-                        setState(() {
-                          _profileImagePath = pickedFile.path;
-                        });
-                      }
-                    },
-                  ),
-                  if (_profileImagePath != null)
-                    ListTile(
-                      leading: const Icon(Icons.delete, color: Colors.red),
-                      title: const Text('Profil Fotoğrafını Kaldır', style: TextStyle(color: Colors.red)),
-                      onTap: () {
-                        Navigator.of(context).pop();
-                        setState(() {
-                          _profileImagePath = null;
-                        });
-                      },
-                    ),
-                  const SizedBox(height: 20),
-                ],
-              ),
-            ),
-          );
-        },
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Resim seçilirken hata oluştu: $e')),
-      );
-    }
-  }
   
   void _saveProfile() async {
     if (_formKey.currentState!.validate()) {
@@ -249,7 +125,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
       final currentUser = userProvider.user;
       
       if (currentUser != null) {
-        // Mevcut kullanıcıyı güncelle
         final updatedUser = currentUser.copyWith(
           name: _nameController.text.trim(),
           userTag: _userTagController.text.trim(),
@@ -260,16 +135,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
           activityLevel: _selectedActivityLevel,
           goal: _selectedGoal,
           weeklyWorkoutDays: _selectedWeeklyWorkoutDays,
-          profileImagePath: _profileImagePath,
           bio: _bioController.text.trim().isNotEmpty ? _bioController.text.trim() : null,
           country: _countryController.text.trim().isNotEmpty ? _countryController.text.trim() : null,
           
-          // Favori bilgiler
+          // FAVORİ BİLGİLER: Boşsa null olarak kaydedildi
           favoriteMeal: _favoriteMealController.text.trim().isNotEmpty ? _favoriteMealController.text.trim() : null,
           favoriteSport: _favoriteSportController.text.trim().isNotEmpty ? _favoriteSportController.text.trim() : null,
           favoriteTeam: _favoriteTeamController.text.trim().isNotEmpty ? _favoriteTeamController.text.trim() : null,
           
-          // Sosyal medya (9 platform)
+          // SOSYAL MEDYA: Boşsa null olarak kaydedildi
           instagram: _instagramController.text.trim().isNotEmpty ? _instagramController.text.trim() : null,
           twitter: _twitterController.text.trim().isNotEmpty ? _twitterController.text.trim() : null,
           facebook: _facebookController.text.trim().isNotEmpty ? _facebookController.text.trim() : null,
@@ -281,7 +155,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
           spotify: _spotifyController.text.trim().isNotEmpty ? _spotifyController.text.trim() : null,
         );
         
-        // UserProvider'ı güncelle
         await userProvider.updateUser(updatedUser);
         
         if (mounted) {
@@ -319,64 +192,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
         child: ListView(
           padding: const EdgeInsets.all(16.0),
           children: [
-            // Profil Resmi Bölümü
-            Center(
-              child: GestureDetector(
-                onTap: _pickProfileImage,
-                child: Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: primaryColor, width: 3),
-                    color: Colors.grey[200],
-                    boxShadow: [
-                      BoxShadow(
-                        color: primaryColor.withOpacity(0.3),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      )
-                    ],
-                  ),
-                  child: _profileImagePath != null
-                      ? ClipOval(
-                          child: Image.file(
-                            File(_profileImagePath!),
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => 
-                                Icon(Icons.person, size: 60, color: Colors.grey[400]),
-                          ),
-                        )
-                      : Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Icon(Icons.person, size: 60, color: Colors.grey[400]),
-                            Positioned(
-                              bottom: 5,
-                              right: 5,
-                              child: Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color: primaryColor,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(Icons.camera_alt, color: Colors.white, size: 16),
-                              ),
-                            ),
-                          ],
-                        ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Center(
-              child: Text(
-                'Profil fotoğrafını değiştirmek için dokunun',
-                style: TextStyle(color: Colors.grey[600], fontSize: 12),
-              ),
-            ),
-            const SizedBox(height: 24),
-
             _buildSectionTitle('Kişisel Bilgiler'),
             _buildTextFormField(
               controller: _nameController, 
@@ -716,10 +531,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }) {
     final primaryColor = DynamicColors.primary;
     
+    String safeValue = value;
+    if (!items.any((item) => item['value'] == value)) {
+      safeValue = items.first['value']!;
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: DropdownButtonFormField<String>(
-        value: value,
+        value: safeValue,
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: Icon(icon, color: primaryColor, size: 20),

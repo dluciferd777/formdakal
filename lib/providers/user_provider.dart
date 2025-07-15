@@ -89,6 +89,22 @@ class UserProvider with ChangeNotifier {
     }
   }
 
+  // YENİ: Kapak resmi URL'sini güncelleme metodu
+  Future<void> updateCoverImage(String? imagePath) async {
+    if (_user != null) {
+      _user!.coverImageUrl = imagePath;
+      await saveUser(_user!);
+    }
+  }
+
+  // YENİ: Kapak resmini silme metodu
+  Future<void> deleteCoverImage() async {
+    if (_user != null) {
+      _user!.coverImageUrl = null;
+      await saveUser(_user!);
+    }
+  }
+
   double getDailyWaterIntake(DateTime date) {
     if (_user == null) return 0.0;
     final dateKey = DateFormat('yyyy-MM-dd').format(date);

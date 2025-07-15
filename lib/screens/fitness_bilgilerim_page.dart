@@ -43,12 +43,12 @@ class _FitnessBilgilerimPageState extends State<FitnessBilgilerimPage> {
     {'value': 'extremely_active', 'label': 'Aşırı Aktif (Günde 2x)'},
   ];
 
-  // HATA DÜZELTİLDİ: Unique goal değerleri
+  // DÜZELTME: `_goals` listesindeki `value` değerleri benzersiz hale getirildi.
   final List<Map<String, String>> _goals = [
-    {'value': 'lose', 'label': 'Kilo Vermek'},
+    {'value': 'lose_weight', 'label': 'Kilo Vermek'}, // 'lose' yerine 'lose_weight'
     {'value': 'maintain', 'label': 'Kiloyu Korumak'}, 
-    {'value': 'gain', 'label': 'Kilo Almak'},
-    {'value': 'muscle_gain', 'label': 'Kas Yapmak'}, // lose_weight_gain_muscle yerine muscle_gain
+    {'value': 'gain_weight', 'label': 'Kilo Almak'}, // 'gain' yerine 'gain_weight'
+    {'value': 'muscle_gain', 'label': 'Kas Yapmak'}, 
   ];
 
   @override
@@ -77,8 +77,13 @@ class _FitnessBilgilerimPageState extends State<FitnessBilgilerimPage> {
       _selectedActivityLevel = user.activityLevel;
       
       // Eski goal değerini yeni sisteme çevir
+      // DÜZELTME: 'lose_weight_gain_muscle' artık 'muscle_gain' olarak eşleştirildi.
       if (user.goal == 'lose_weight_gain_muscle') {
         _selectedGoal = 'muscle_gain';
+      } else if (user.goal == 'lose') { // 'lose' değeri varsa 'lose_weight'e çevir
+        _selectedGoal = 'lose_weight';
+      } else if (user.goal == 'gain') { // 'gain' değeri varsa 'gain_weight'e çevir
+        _selectedGoal = 'gain_weight';
       } else {
         _selectedGoal = user.goal;
       }
@@ -174,8 +179,8 @@ class _FitnessBilgilerimPageState extends State<FitnessBilgilerimPage> {
       
       // Hedefe göre ayarlama - HATA DÜZELTİLDİ: Yeni goal değerleri
       switch (_selectedGoal) {
-        case 'lose': calories -= 500; break;
-        case 'gain': calories += 500; break;
+        case 'lose_weight': calories -= 500; break; // 'lose' yerine 'lose_weight'
+        case 'gain_weight': calories += 500; break; // 'gain' yerine 'gain_weight'
         case 'muscle_gain': calories -= 200; break; // Hafif kalori açığı
       }
       

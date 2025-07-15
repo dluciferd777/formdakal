@@ -1,3 +1,4 @@
+// lib/screens/fit_profile_screen.dart
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -53,7 +54,7 @@ class _FitProfileScreenState extends State<FitProfileScreen> with TickerProvider
   }
 
   void _initializeSocialUser() {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userProvider = context.read<UserProvider>();
     final user = userProvider.user;
     
     if (user != null) {
@@ -62,7 +63,7 @@ class _FitProfileScreenState extends State<FitProfileScreen> with TickerProvider
         userTag: '@${user.userTag}',
         bio: user.bio,
         profileImageUrl: user.profileImagePath ?? 'https://i.pravatar.cc/150?img=27',
-        coverImageUrl: 'https://images.unsplash.com/photo-1549060279-7e168fcee0c2?fit=crop&w=1200&h=400&q=80',
+        coverImageUrl: user.coverImageUrl ?? 'https://images.unsplash.com/photo-1549060279-7e168fcee0c2?fit=crop&w=1200&h=400&q=80',
         age: user.age,
         height: user.height,
         weight: user.weight,
@@ -118,18 +119,38 @@ class _FitProfileScreenState extends State<FitProfileScreen> with TickerProvider
   }
 
   Future<void> _pickImage(ImageSource source, {required bool isProfile}) async {
-    final XFile? pickedFile = await _picker.pickImage(source: source);
-    if (pickedFile != null) {
-      setState(() {
+    try {
+      final XFile? pickedFile = await _picker.pickImage(source: source);
+      if (pickedFile != null) {
+        final userProvider = context.read<UserProvider>();
         if (isProfile) {
-          _socialUser.profileImageUrl = pickedFile.path;
-          context.read<UserProvider>().updateProfileImage(pickedFile.path);
+          await userProvider.updateProfileImage(pickedFile.path);
         } else {
-          _socialUser.coverImageUrl = pickedFile.path;
+          await userProvider.updateCoverImage(pickedFile.path);
         }
+        _initializeSocialUser();
+        setState(() {});
         context.read<SocialProvider>().updateUserInfoInPosts(_socialUser);
-      });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Resim seçilemedi: $e')),
+        );
+      }
     }
+  }
+
+  Future<void> _deleteImage({required bool isProfile}) async {
+    final userProvider = context.read<UserProvider>();
+    if (isProfile) {
+      await userProvider.deleteProfileImage();
+    } else {
+      await userProvider.deleteCoverImage();
+    }
+    _initializeSocialUser();
+    setState(() {});
+    context.read<SocialProvider>().updateUserInfoInPosts(_socialUser);
   }
 
   void _showPicker(BuildContext context, {required bool isProfile}) {
@@ -157,31 +178,27 @@ class _FitProfileScreenState extends State<FitProfileScreen> with TickerProvider
                 ListTile(
                   leading: const Icon(Icons.photo_library),
                   title: const Text('Galeriden Seç'),
-                  onTap: () {
-                    _pickImage(ImageSource.gallery, isProfile: isProfile);
+                  onTap: () async {
                     Navigator.of(context).pop();
+                    await _pickImage(ImageSource.gallery, isProfile: isProfile);
                   },
                 ),
                 ListTile(
                   leading: const Icon(Icons.photo_camera),
                   title: const Text('Kamera ile Çek'),
+                  onTap: () async {
+                    Navigator.of(context).pop();
+                    await _pickImage(ImageSource.camera, isProfile: isProfile);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.delete, color: Colors.red),
+                  title: Text(isProfile ? 'Profil Fotoğrafını Kaldır' : 'Kapak Fotoğrafını Kaldır', style: const TextStyle(color: Colors.red)),
                   onTap: () {
-                    _pickImage(ImageSource.camera, isProfile: isProfile);
+                    _deleteImage(isProfile: isProfile);
                     Navigator.of(context).pop();
                   },
                 ),
-                if (isProfile)
-                  ListTile(
-                    leading: const Icon(Icons.delete, color: Colors.red),
-                    title: const Text('Profil Fotoğrafını Kaldır', style: TextStyle(color: Colors.red)),
-                    onTap: () {
-                      setState(() {
-                        _socialUser.profileImageUrl = 'https://i.pravatar.cc/150?img=27';
-                        context.read<UserProvider>().deleteProfileImage();
-                      });
-                      Navigator.of(context).pop();
-                    },
-                  ),
                 const SizedBox(height: 20),
               ],
             ),
@@ -191,14 +208,22 @@ class _FitProfileScreenState extends State<FitProfileScreen> with TickerProvider
     );
   }
 
-  ImageProvider _getImageProvider(String path) {
+  ImageProvider _getImageProvider(String? path) { 
+    if (path == null || path.isEmpty) {
+      return const AssetImage('assets/images/default_placeholder.png');
+    }
     if (kIsWeb) {
       return NetworkImage(path);
     } else {
-      if (path.startsWith('http')) {
+      if (path.startsWith('http://') || path.startsWith('https://')) {
         return CachedNetworkImageProvider(path);
       } else {
-        return FileImage(File(path));
+        final file = File(path);
+        if (file.existsSync()) { 
+          return FileImage(file);
+        } else {
+          return const AssetImage('assets/images/default_placeholder.png'); 
+        }
       }
     }
   }
@@ -322,17 +347,26 @@ class _FitProfileScreenState extends State<FitProfileScreen> with TickerProvider
           icon: Icon(Icons.search, color: primaryColor),
           onPressed: _navigateToSearchPage,
           tooltip: 'Kullanıcı Ara',
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
         ),
+        const SizedBox(width: 4.0),
         IconButton(
           icon: Icon(Icons.edit, color: primaryColor),
           onPressed: _navigateToEditProfile,
           tooltip: 'Profili Düzenle',
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
         ),
+        const SizedBox(width: 4.0),
         IconButton(
           icon: Icon(Icons.settings, color: primaryColor),
           onPressed: _navigateToPrivacySettings,
           tooltip: 'Gizlilik Ayarları',
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
         ),
+        const SizedBox(width: 8.0),
       ],
       flexibleSpace: FlexibleSpaceBar(background: _buildHeader(primaryColor)),
       bottom: TabBar(
@@ -351,60 +385,168 @@ class _FitProfileScreenState extends State<FitProfileScreen> with TickerProvider
   }
 
   Widget _buildHeader(Color primaryColor) {
-    return GestureDetector(
-      onTap: () => _showPicker(context, isProfile: false),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          Image(image: _getImageProvider(_socialUser.coverImageUrl), fit: BoxFit.cover),
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.black54, Colors.transparent, Colors.black87], 
-                begin: Alignment.topCenter, 
-                end: Alignment.bottomCenter, 
-                stops: [0.0, 0.5, 1.0]
-              )
-            )
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Image(
+          image: _getImageProvider(_socialUser.coverImageUrl),
+          fit: BoxFit.cover,
+          alignment: Alignment.center,
+        ),
+        Positioned.fill(
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                _showPicker(context, isProfile: false);
+              },
+              child: Align(
+                alignment: Alignment.topRight,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black54,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.all(4),
+                    child: const Icon(Icons.edit, color: Colors.white, size: 20),
+                  ),
+                ),
+              ),
+            ),
           ),
-          Positioned(
-            bottom: 70.0, 
-            left: 0, 
-            right: 0, 
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center, 
-              children: [ 
-                _buildProfilePicture(primaryColor), 
-                const SizedBox(height: 12), 
-                Text(_socialUser.userName, 
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white, 
-                    shadows: [Shadow(blurRadius: 5.0, color: Colors.black54)])
-                ), 
-                Text(_socialUser.userTag, style: TextStyle(fontSize: 16, color: Colors.grey[300])), 
-                const SizedBox(height: 16), 
-                _buildSocialIcons() 
-              ]
+        ),
+        Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.black54, Colors.transparent, Colors.black87], 
+              begin: Alignment.topCenter, 
+              end: Alignment.bottomCenter, 
+              stops: [0.0, 0.5, 1.0]
             )
           )
-        ],
-      ),
+        ),
+        Positioned(
+          bottom: 70.0, 
+          left: 0, 
+          right: 0, 
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center, 
+            children: [ 
+              _buildProfilePicture(primaryColor), 
+              const SizedBox(height: 12), 
+              Text(_socialUser.userName, 
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white, 
+                  shadows: [Shadow(blurRadius: 5.0, color: Colors.black54)])
+              ), 
+              Text(_socialUser.userTag, style: TextStyle(fontSize: 16, color: Colors.grey[300])), 
+              const SizedBox(height: 16), 
+              _buildSocialIcons() 
+            ]
+          )
+        )
+      ],
     );
   }
   
   Widget _buildProfilePicture(Color primaryColor) {
     return GestureDetector(
-      onTap: () => _showPicker(context, isProfile: true),
-      child: Container(
-        decoration: BoxDecoration(
-          shape: BoxShape.circle, 
-          border: Border.all(color: primaryColor, width: 3.0), 
-          boxShadow: const [BoxShadow(color: Colors.black54, blurRadius: 15.0, offset: Offset(0, 5))]
-        ),
-        child: CircleAvatar(
-          radius: 50,
-          backgroundColor: Colors.grey[800],
-          backgroundImage: _getImageProvider(_socialUser.profileImageUrl),
-        ),
+      onTap: () {
+        showModalBottomSheet(
+          context: context,
+          backgroundColor: Colors.transparent,
+          builder: (BuildContext bc) {
+            return Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: SafeArea(
+                child: Wrap(
+                  children: <Widget>[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(20),
+                      child: const Text(
+                        'Resim Değiştir',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.person),
+                      title: const Text('Profil Fotoğrafını Değiştir'),
+                      onTap: () async {
+                        Navigator.of(context).pop();
+                        await _pickImage(ImageSource.gallery, isProfile: true);
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.image),
+                      title: const Text('Kapak Fotoğrafını Değiştir'),
+                      onTap: () async {
+                        Navigator.of(context).pop();
+                        await _pickImage(ImageSource.gallery, isProfile: false);
+                      },
+                    ),
+                    if (_socialUser.profileImageUrl != 'https://i.pravatar.cc/150?img=27')
+                      ListTile(
+                        leading: const Icon(Icons.delete, color: Colors.red),
+                        title: const Text('Profil Fotoğrafını Kaldır', style: TextStyle(color: Colors.red)),
+                        onTap: () {
+                          _deleteImage(isProfile: true);
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    if (_socialUser.coverImageUrl != 'https://images.unsplash.com/photo-1549060279-7e168fcee0c2?fit=crop&w=1200&h=400&q=80')
+                      ListTile(
+                        leading: const Icon(Icons.delete_forever, color: Colors.red),
+                        title: const Text('Kapak Fotoğrafını Kaldır', style: TextStyle(color: Colors.red)),
+                        onTap: () {
+                          _deleteImage(isProfile: false);
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+      child: Stack( 
+        alignment: Alignment.center,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle, 
+              border: Border.all(color: primaryColor, width: 3.0), 
+              boxShadow: const [BoxShadow(color: Colors.black54, blurRadius: 15.0, offset: Offset(0, 5))]
+            ),
+            child: CircleAvatar(
+              radius: 50,
+              backgroundColor: Colors.grey[800],
+              backgroundImage: _getImageProvider(_socialUser.profileImageUrl),
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            right: 0,
+            child: Container(
+              decoration: BoxDecoration(
+                color: primaryColor,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+              child: const Padding(
+                padding: EdgeInsets.all(6.0),
+                child: Icon(Icons.edit, color: Colors.white, size: 18),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -425,8 +567,7 @@ class _FitProfileScreenState extends State<FitProfileScreen> with TickerProvider
     List<Widget> activeIcons = [];
     
     for (String platform in socialPlatforms.keys) {
-      if (_socialUser.socialLinks.containsKey(platform) && 
-          _socialUser.socialLinks[platform]!.isNotEmpty) {
+      if (_socialUser.socialLinks[platform]?.isNotEmpty ?? false) { 
         activeIcons.add(
           _socialIcon(socialPlatforms[platform]!, _getSocialMediaUrl(platform, _socialUser.socialLinks[platform]!))
         );
@@ -462,7 +603,7 @@ class _FitProfileScreenState extends State<FitProfileScreen> with TickerProvider
       case 'twitch':
         return handle.startsWith('http') ? handle : 'https://twitch.tv/$handle';
       case 'discord':
-        return handle; // Discord için direkt handle gösterilir
+        return handle;
       case 'whatsapp':
         return handle.startsWith('http') ? handle : 'https://wa.me/$handle';
       case 'spotify':
@@ -510,38 +651,49 @@ class _FitProfileScreenState extends State<FitProfileScreen> with TickerProvider
   }
   
   Widget _buildInfoTab() {
-    final bool isVisible = _privacySettings['infoVisible'] ?? true;
-    
-    if (!isVisible) {
+    final userProvider = context.watch<UserProvider>();
+    final isOwner = userProvider.user?.userTag == _socialUser.userTag.replaceAll('@', '');
+    final bool isVisibleForOthers = _privacySettings['infoVisible'] ?? true;
+
+    if (!isOwner && !isVisibleForOthers) {
       return _buildLockedContent('Bilgiler gizli', 'infoVisible');
     }
     
-    return ListView(
-      padding: const EdgeInsets.all(16.0), 
-      children: [ 
-        _buildSectionHeader('Kişisel Bilgiler'),
-        _infoTile('Yaş', '${_socialUser.age} yaşında'), 
-        _infoTile('Boy', '${_socialUser.height.toInt()} cm'), 
-        _infoTile('Ülke', _socialUser.city), 
-        
-        const SizedBox(height: 24),
-        _buildSectionHeader('Favorilerim'),
-        _infoTile('Favori Yemek', _socialUser.favoriteMeal), 
-        _infoTile('Favori Spor', _socialUser.favoriteSport), 
-        _infoTile('Favori Takım', _socialUser.favoriteTeam), 
-        
-        if (_socialUser.bio != null && _socialUser.bio!.isNotEmpty) ...[
-          const SizedBox(height: 24),
-          _buildSectionHeader('Bio'),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Text(
-              _socialUser.bio!,
-              style: const TextStyle(fontSize: 16),
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start, 
+              children: [ 
+                _buildSectionHeader('Kişisel Bilgiler'),
+                _infoTile('Yaş', '${_socialUser.age} yaşında'), 
+                _infoTile('Boy', '${_socialUser.height.toInt()} cm'), 
+                _infoTile('Ülke', _socialUser.city), 
+                
+                const SizedBox(height: 24),
+                _buildSectionHeader('Favorilerim'),
+                _infoTile('Favori Yemek', _socialUser.favoriteMeal), 
+                _infoTile('Favori Spor', _socialUser.favoriteSport), 
+                _infoTile('Favori Takım', _socialUser.favoriteTeam), 
+                
+                if (_socialUser.bio != null && _socialUser.bio!.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  _buildSectionHeader('Bio'),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      _socialUser.bio!,
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ],
+              ]
             ),
           ),
-        ],
-      ]
+        );
+      },
     );
   }
   
@@ -561,16 +713,19 @@ class _FitProfileScreenState extends State<FitProfileScreen> with TickerProvider
   
   Widget _infoTile(String title, String subtitle) { 
     return ListTile(
-      title: Text(title, style: TextStyle(color: Colors.grey[400])), 
-      subtitle: Text(subtitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+      // DÜZELTME: title ve subtitle için Expanded kullanıldı
+      title: Row(children: [Expanded(child: Text(title, style: TextStyle(color: Colors.grey[400])))],), 
+      subtitle: Row(children: [Expanded(child: Text(subtitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)))],),
       contentPadding: const EdgeInsets.symmetric(vertical: 4.0),
     ); 
   }
   
   Widget _buildFollowingTab() {
-    final bool isVisible = _privacySettings['followVisible'] ?? true;
-    
-    if (!isVisible) {
+    final userProvider = context.watch<UserProvider>();
+    final isOwner = userProvider.user?.userTag == _socialUser.userTag.replaceAll('@', '');
+    final bool isVisibleForOthers = _privacySettings['followVisible'] ?? true;
+
+    if (!isOwner && !isVisibleForOthers) {
       return _buildLockedContent('Takip listesi gizli', 'followVisible');
     }
     
@@ -649,9 +804,11 @@ class _FitProfileScreenState extends State<FitProfileScreen> with TickerProvider
   }
   
   Widget _buildPhotosTab() {
-    final bool isVisible = _privacySettings['photosVisible'] ?? true;
-    
-    if (!isVisible) {
+    final userProvider = context.watch<UserProvider>();
+    final isOwner = userProvider.user?.userTag == _socialUser.userTag.replaceAll('@', '');
+    final bool isVisibleForOthers = _privacySettings['photosVisible'] ?? true;
+
+    if (!isOwner && !isVisibleForOthers) {
       return _buildLockedContent('Fotoğraflar gizli', 'photosVisible');
     }
     
@@ -679,70 +836,80 @@ class _FitProfileScreenState extends State<FitProfileScreen> with TickerProvider
           );
         }
 
-        return GridView.builder(
-          padding: const EdgeInsets.all(8.0),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3, 
-            crossAxisSpacing: 4, 
-            mainAxisSpacing: 4,
-            childAspectRatio: 1.0,
-          ), 
-          itemCount: photoPosts.length, 
-          itemBuilder: (context, index) { 
-            final post = photoPosts[index];
-            final imagePath = post.imagePath!;
-            
-            return GestureDetector(
-              onTap: () => _showPhotoDetail(context, post),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2))],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      kIsWeb
-                          ? Image.network(imagePath, fit: BoxFit.cover, 
-                              errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey[300], child: const Icon(Icons.error)))
-                          : Image.file(File(imagePath), fit: BoxFit.cover, 
-                              errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey[300], child: const Icon(Icons.error))),
-                      
-                      Positioned(
-                        bottom: 4, right: 4,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(color: Colors.black.withOpacity(0.7), borderRadius: BorderRadius.circular(4)),
-                          child: Text(_formatPostDate(post.timestamp), 
-                            style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w500)),
+        return LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            return SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3, 
+                    crossAxisSpacing: 4, 
+                    mainAxisSpacing: 4,
+                    childAspectRatio: 1.0,
+                  ), 
+                  itemCount: photoPosts.length, 
+                  itemBuilder: (context, index) { 
+                    final post = photoPosts[index];
+                    final imagePath = post.imagePath!;
+                    
+                    return GestureDetector(
+                      onTap: () => _showPhotoDetail(context, post),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2))],
                         ),
-                      ),
-                      
-                      if (post.likeCount > 0)
-                        Positioned(
-                          bottom: 4, left: 4,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(color: Colors.black.withOpacity(0.7), borderRadius: BorderRadius.circular(4)),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.favorite, color: Colors.red, size: 12),
-                                const SizedBox(width: 2),
-                                Text(post.likeCount.toString(), 
-                                  style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w500)),
-                              ],
-                            ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              kIsWeb
+                                  ? Image.network(imagePath, fit: BoxFit.cover, 
+                                      errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey[300], child: const Icon(Icons.error)))
+                                  : Image.file(File(imagePath), fit: BoxFit.cover, 
+                                      errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey[300], child: const Icon(Icons.error))),
+                              
+                              Positioned(
+                                bottom: 4, right: 4,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(color: Colors.black.withOpacity(0.7), borderRadius: BorderRadius.circular(4)),
+                                  child: Text(_formatPostDate(post.timestamp), 
+                                    style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w500)),
+                                ),
+                              ),
+                              
+                              if (post.likeCount > 0)
+                                Positioned(
+                                  bottom: 4, left: 4,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(color: Colors.black.withOpacity(0.7), borderRadius: BorderRadius.circular(4)),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.favorite, color: Colors.red, size: 12),
+                                        const SizedBox(width: 2),
+                                        Text(post.likeCount.toString(), 
+                                          style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w500)),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
-                    ],
-                  ),
+                      ),
+                    );
+                  },
                 ),
               ),
             );
-          }
+          },
         );
       },
     );

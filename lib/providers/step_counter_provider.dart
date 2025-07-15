@@ -27,7 +27,7 @@ class StepCounterProvider with ChangeNotifier {
     if (_userProvider?.user != null) {
       return _userProvider!.user!.dailyStepGoal;
     }
-    return 8000; // Varsayılan
+    return 6000; // Varsayılan
   }
 
   StepCounterProvider() {

@@ -12,6 +12,7 @@ class UserModel {
   String goal;
   int weeklyWorkoutDays;
   String? profileImagePath;
+  String? coverImageUrl; // YENİ: Kapak resmi URL'si eklendi
   
   // Ek vücut ölçümleri
   double? bodyFatPercentage;
@@ -32,11 +33,24 @@ class UserModel {
   bool allowFriendRequests;
   String? bio;
 
-  // YENİ EKLENEN ALANLAR
+  // YENİ EKLENEN ALANLAR (hata1.txt'den gelen eksik alanlar)
   String? favoriteTeam;
   String? country;
   String? instagram;
   String? twitter;
+  String? favoriteMeal; 
+  String? favoriteSport; 
+  String? facebook; 
+  String? tiktok; 
+  String? kick; 
+  String? twitch; 
+  String? discord; 
+  String? whatsapp; 
+  String? spotify; 
+  
+  // Sosyal profildeki isFollowing özelliği (UserService ve UserListTile için)
+  bool isFollowing; 
+
 
   UserModel({
     required this.name,
@@ -49,6 +63,7 @@ class UserModel {
     required this.goal,
     required this.weeklyWorkoutDays,
     this.profileImagePath,
+    this.coverImageUrl, // YENİ: Constructor'a eklendi
     this.bodyFatPercentage,
     this.musclePercentage,
     this.waterPercentage,
@@ -65,6 +80,16 @@ class UserModel {
     this.country,
     this.instagram,
     this.twitter,
+    this.favoriteMeal, 
+    this.favoriteSport, 
+    this.facebook, 
+    this.tiktok, 
+    this.kick, 
+    this.twitch, 
+    this.discord, 
+    this.whatsapp, 
+    this.spotify, 
+    this.isFollowing = false, 
   }) : 
     dailyWaterIntake = dailyWaterIntake ?? {},
     friendsList = friendsList ?? [],
@@ -187,6 +212,7 @@ class UserModel {
       'goal': goal,
       'weeklyWorkoutDays': weeklyWorkoutDays,
       'profileImagePath': profileImagePath,
+      'coverImageUrl': coverImageUrl, // YENİ: JSON'a eklendi
       'bodyFatPercentage': bodyFatPercentage,
       'musclePercentage': musclePercentage,
       'waterPercentage': waterPercentage,
@@ -203,6 +229,16 @@ class UserModel {
       'country': country,
       'instagram': instagram,
       'twitter': twitter,
+      'favoriteMeal': favoriteMeal, 
+      'favoriteSport': favoriteSport, 
+      'facebook': facebook, 
+      'tiktok': tiktok, 
+      'kick': kick, 
+      'twitch': twitch, 
+      'discord': discord, 
+      'whatsapp': whatsapp, 
+      'spotify': spotify, 
+      'isFollowing': isFollowing, 
     };
   }
 
@@ -211,7 +247,12 @@ class UserModel {
     String goalValue = json['goal'] ?? 'maintain';
     if (goalValue == 'lose_weight_gain_muscle') {
       goalValue = 'muscle_gain';
+    } else if (goalValue == 'lose') { 
+      goalValue = 'lose_weight';
+    } else if (goalValue == 'gain') { 
+      goalValue = 'gain_weight';
     }
+
 
     return UserModel(
       name: json['name'] ?? '',
@@ -221,9 +262,10 @@ class UserModel {
       height: (json['height'] ?? 170).toDouble(),
       weight: (json['weight'] ?? 70).toDouble(),
       activityLevel: json['activityLevel'] ?? 'moderately_active',
-      goal: goalValue, // DÜZELTİLMİŞ goal değeri
+      goal: goalValue, 
       weeklyWorkoutDays: json['weeklyWorkoutDays'] ?? 3,
       profileImagePath: json['profileImagePath'],
+      coverImageUrl: json['coverImageUrl'], // YENİ: fromJson'a eklendi
       bodyFatPercentage: json['bodyFatPercentage']?.toDouble(),
       musclePercentage: json['musclePercentage']?.toDouble(),
       waterPercentage: json['waterPercentage']?.toDouble(),
@@ -240,6 +282,16 @@ class UserModel {
       country: json['country'],
       instagram: json['instagram'],
       twitter: json['twitter'],
+      favoriteMeal: json['favoriteMeal'], 
+      favoriteSport: json['favoriteSport'], 
+      facebook: json['facebook'], 
+      tiktok: json['tiktok'], 
+      kick: json['kick'], 
+      twitch: json['twitch'], 
+      discord: json['discord'], 
+      whatsapp: json['whatsapp'], 
+      spotify: json['spotify'], 
+      isFollowing: json['isFollowing'] ?? false, 
     );
   }
 
@@ -266,6 +318,7 @@ class UserModel {
     String? goal,
     int? weeklyWorkoutDays,
     String? profileImagePath,
+    String? coverImageUrl, // YENİ: copyWith'e eklendi
     double? bodyFatPercentage,
     double? musclePercentage,
     double? waterPercentage,
@@ -282,6 +335,16 @@ class UserModel {
     String? country,
     String? instagram,
     String? twitter,
+    String? favoriteMeal, 
+    String? favoriteSport, 
+    String? facebook, 
+    String? tiktok, 
+    String? kick, 
+    String? twitch, 
+    String? discord, 
+    String? whatsapp, 
+    String? spotify, 
+    bool? isFollowing, 
   }) {
     return UserModel(
       name: name ?? this.name,
@@ -294,6 +357,7 @@ class UserModel {
       goal: goal ?? this.goal,
       weeklyWorkoutDays: weeklyWorkoutDays ?? this.weeklyWorkoutDays,
       profileImagePath: profileImagePath ?? this.profileImagePath,
+      coverImageUrl: coverImageUrl ?? this.coverImageUrl, // YENİ: copyWith'e eklendi
       bodyFatPercentage: bodyFatPercentage ?? this.bodyFatPercentage,
       musclePercentage: musclePercentage ?? this.musclePercentage,
       waterPercentage: waterPercentage ?? this.waterPercentage,
@@ -310,6 +374,16 @@ class UserModel {
       country: country ?? this.country,
       instagram: instagram ?? this.instagram,
       twitter: twitter ?? this.twitter,
+      favoriteMeal: favoriteMeal ?? this.favoriteMeal, 
+      favoriteSport: favoriteSport ?? this.favoriteSport, 
+      facebook: facebook ?? this.facebook, 
+      tiktok: tiktok ?? this.tiktok, 
+      kick: kick ?? this.kick, 
+      twitch: twitch ?? this.twitch, 
+      discord: discord ?? this.discord, 
+      whatsapp: whatsapp ?? this.whatsapp, 
+      spotify: spotify ?? this.spotify, 
+      isFollowing: isFollowing ?? this.isFollowing, 
     );
   }
 }

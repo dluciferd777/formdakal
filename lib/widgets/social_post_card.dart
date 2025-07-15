@@ -1,3 +1,4 @@
+// lib/widgets/social_post_card.dart
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../models/social_post_model.dart';
 import '../models/social_user_model.dart';
+import '../models/comment_model.dart';
 import '../providers/social_provider.dart';
 import '../widgets/social_interaction_bar.dart';
 import '../widgets/fitness_stats_card.dart';
@@ -73,6 +75,135 @@ class SocialPostCard extends StatelessWidget {
     );
   }
 
+  // YENİ: Yorum girişini gösteren metod
+  void _showCommentInput(BuildContext context) {
+    final commentController = TextEditingController();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Padding(
+          // DÜZELTME: Bottom sheet'in klavye ve navigasyon barının üstünde kalması için padding
+          padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(ctx).cardColor,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            ),
+            child: SingleChildScrollView( // İçeriğin kaydırılabilir olmasını sağlar
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Yorum Ekle',
+                    style: Theme.of(ctx).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: commentController,
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      hintText: 'Yorumunuzu yazın...',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.send),
+                        onPressed: () {
+                          if (commentController.text.isNotEmpty) {
+                            final newComment = Comment(
+                              id: DateTime.now().toIso8601String(),
+                              userName: currentUser.userName,
+                              userProfileImageUrl: currentUser.profileImageUrl,
+                              text: commentController.text,
+                              timestamp: DateTime.now(),
+                            );
+                            context.read<SocialProvider>().addComment(post.id, newComment);
+                            Navigator.pop(ctx);
+                          }
+                        },
+                      ),
+                    ),
+                    maxLines: null,
+                  ),
+                  const SizedBox(height: 8),
+                  if (post.comments.isNotEmpty) ...[
+                    const Divider(),
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text('Yorumlar (${post.comments.length})', style: Theme.of(ctx).textTheme.titleMedium),
+                    ),
+                    const SizedBox(height: 8),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: post.comments.length,
+                      itemBuilder: (context, index) {
+                        final comment = post.comments[index];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4.0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              CircleAvatar(
+                                radius: 16,
+                                backgroundImage: CachedNetworkImageProvider(comment.userProfileImageUrl),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      comment.userName,
+                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                    ),
+                                    Text(
+                                      comment.text,
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                    Text(
+                                      _formatCommentDate(comment.timestamp),
+                                      style: const TextStyle(color: Colors.grey, fontSize: 10),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  String _formatCommentDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays > 7) {
+      return '${date.day}/${date.month}/${date.year}';
+    } else if (difference.inDays > 0) {
+      return '${difference.inDays} gün önce';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours} saat önce';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes} dakika önce';
+    } else {
+      return 'Şimdi';
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -89,7 +220,11 @@ class SocialPostCard extends StatelessWidget {
             _buildPostContent(context),
             const SizedBox(height: 8),
             const Divider(),
-            SocialInteractionBar(post: post, currentUser: currentUser),
+            SocialInteractionBar(
+              post: post, 
+              currentUser: currentUser,
+              onCommentTap: () => _showCommentInput(context),
+            ),
           ],
         ),
       ),

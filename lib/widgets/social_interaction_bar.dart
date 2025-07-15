@@ -1,3 +1,4 @@
+// lib/widgets/social_interaction_bar.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -9,11 +10,13 @@ import '../utils/color_themes.dart'; // FITNESS UYGULAMASI İÇİN
 class SocialInteractionBar extends StatelessWidget {
   final SocialPost post;
   final SocialUser currentUser;
+  final VoidCallback onCommentTap; // YENİ: Yorum butonu için callback
 
   const SocialInteractionBar({
     super.key, 
     required this.post,
     required this.currentUser,
+    required this.onCommentTap, // YENİ: Callback eklendi
   });
 
   @override
@@ -38,12 +41,7 @@ class SocialInteractionBar extends StatelessWidget {
           context: context,
           icon: Icons.comment_outlined,
           text: post.commentCount.toString(),
-          onTap: () {
-            // Yorum sayfasına git - şimdilik boş
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Yorum özelliği yakında eklenecek!')),
-            );
-          },
+          onTap: onCommentTap, // YENİ: Callback kullanıldı
         ),
         _buildInteractionButton(
           context: context,
