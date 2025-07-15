@@ -38,7 +38,6 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../screens/fitness_bilgilerim_page.dart';
 
 Future<void> requestEssentialPermissions() async {
   var activityStatus = await Permission.activityRecognition.status;
@@ -148,14 +147,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           ),
           update: (_, achievement, user, exercise, previous) => previous!..updateDependencies(achievement, user, exercise),
         ),
-
-        ChangeNotifierProxyProvider<UserProvider, StepCounterProvider>(
-          create: (_) => StepCounterProvider(),
-          update: (_, userProvider, stepProvider) {
-            stepProvider?.setUserProvider(userProvider);
-            return stepProvider!;
-          },
-         ),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
@@ -184,8 +175,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               '/achievements': (context) => const AchievementsScreen(),
               '/step_details': (context) => const StepDetailsScreen(),
               '/daily_summary': (context) => const DailySummaryScreen(),
-              '/fitness_bilgilerim': (context) => const FitnessBilgilerimPage(),
-
             },
           );
         },

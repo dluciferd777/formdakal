@@ -1,4 +1,4 @@
-// lib/models/user_model.dart - SADECE İHTİYAÇ OLAN SOSYAL MEDYA ALANLARI
+// lib/models/user_model.dart - GOAL DEĞERLERİ DÜZELTİLDİ
 import '../services/calorie_service.dart';
 
 class UserModel {
@@ -32,25 +32,11 @@ class UserModel {
   bool allowFriendRequests;
   String? bio;
 
-  // Kişisel bilgiler
+  // YENİ EKLENEN ALANLAR
   String? favoriteTeam;
   String? country;
-  String? favoriteSport;
-  String? favoriteMeal;
-  
-  // Sosyal medya platformları (9 tane)
   String? instagram;
   String? twitter;
-  String? facebook;
-  String? tiktok;
-  String? kick;
-  String? twitch;
-  String? discord;
-  String? whatsapp;
-  String? spotify;
-  
-  // Takip sistemi
-  bool isFollowing;
 
   UserModel({
     required this.name,
@@ -74,45 +60,16 @@ class UserModel {
     this.isProfilePublic = true,
     this.allowFriendRequests = true,
     this.bio,
-    // Kişisel bilgiler
+    // YENİ EKLENEN ALANLAR
     this.favoriteTeam,
     this.country,
-    this.favoriteSport,
-    this.favoriteMeal,
-    // Sosyal medya platformları
     this.instagram,
     this.twitter,
-    this.facebook,
-    this.tiktok,
-    this.kick,
-    this.twitch,
-    this.discord,
-    this.whatsapp,
-    this.spotify,
-    // Takip sistemi
-    this.isFollowing = false,
   }) : 
     dailyWaterIntake = dailyWaterIntake ?? {},
     friendsList = friendsList ?? [],
     friendRequests = friendRequests ?? [],
     sentRequests = sentRequests ?? [];
-
-  // Tüm sosyal medya linklerini Map olarak döndürür
-  Map<String, String> get allSocialLinks {
-    final Map<String, String> links = {};
-    
-    if (instagram != null && instagram!.isNotEmpty) links['instagram'] = instagram!;
-    if (twitter != null && twitter!.isNotEmpty) links['twitter'] = twitter!;
-    if (facebook != null && facebook!.isNotEmpty) links['facebook'] = facebook!;
-    if (tiktok != null && tiktok!.isNotEmpty) links['tiktok'] = tiktok!;
-    if (kick != null && kick!.isNotEmpty) links['kick'] = kick!;
-    if (twitch != null && twitch!.isNotEmpty) links['twitch'] = twitch!;
-    if (discord != null && discord!.isNotEmpty) links['discord'] = discord!;
-    if (whatsapp != null && whatsapp!.isNotEmpty) links['whatsapp'] = whatsapp!;
-    if (spotify != null && spotify!.isNotEmpty) links['spotify'] = spotify!;
-    
-    return links;
-  }
 
   // Günlük kalori ihtiyacı hesaplama
   double get dailyCalorieNeeds {
@@ -241,27 +198,21 @@ class UserModel {
       'isProfilePublic': isProfilePublic,
       'allowFriendRequests': allowFriendRequests,
       'bio': bio,
-      // Kişisel bilgiler
+      // YENİ EKLENEN ALANLAR
       'favoriteTeam': favoriteTeam,
       'country': country,
-      'favoriteSport': favoriteSport,
-      'favoriteMeal': favoriteMeal,
-      // Sosyal medya platformları
       'instagram': instagram,
       'twitter': twitter,
-      'facebook': facebook,
-      'tiktok': tiktok,
-      'kick': kick,
-      'twitch': twitch,
-      'discord': discord,
-      'whatsapp': whatsapp,
-      'spotify': spotify,
-      // Takip sistemi
-      'isFollowing': isFollowing,
     };
   }
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    // HATA DÜZELTİLDİ: Eski goal değerlerini yeni sisteme çevir
+    String goalValue = json['goal'] ?? 'maintain';
+    if (goalValue == 'lose_weight_gain_muscle') {
+      goalValue = 'muscle_gain';
+    }
+
     return UserModel(
       name: json['name'] ?? '',
       userTag: json['userTag'] ?? _generateRandomTag(),
@@ -270,7 +221,7 @@ class UserModel {
       height: (json['height'] ?? 170).toDouble(),
       weight: (json['weight'] ?? 70).toDouble(),
       activityLevel: json['activityLevel'] ?? 'moderately_active',
-      goal: json['goal'] ?? 'maintain',
+      goal: goalValue, // DÜZELTİLMİŞ goal değeri
       weeklyWorkoutDays: json['weeklyWorkoutDays'] ?? 3,
       profileImagePath: json['profileImagePath'],
       bodyFatPercentage: json['bodyFatPercentage']?.toDouble(),
@@ -284,23 +235,11 @@ class UserModel {
       isProfilePublic: json['isProfilePublic'] ?? true,
       allowFriendRequests: json['allowFriendRequests'] ?? true,
       bio: json['bio'],
-      // Kişisel bilgiler
+      // YENİ EKLENEN ALANLAR
       favoriteTeam: json['favoriteTeam'],
       country: json['country'],
-      favoriteSport: json['favoriteSport'],
-      favoriteMeal: json['favoriteMeal'],
-      // Sosyal medya platformları
       instagram: json['instagram'],
       twitter: json['twitter'],
-      facebook: json['facebook'],
-      tiktok: json['tiktok'],
-      kick: json['kick'],
-      twitch: json['twitch'],
-      discord: json['discord'],
-      whatsapp: json['whatsapp'],
-      spotify: json['spotify'],
-      // Takip sistemi
-      isFollowing: json['isFollowing'] ?? false,
     );
   }
 
@@ -338,23 +277,11 @@ class UserModel {
     bool? isProfilePublic,
     bool? allowFriendRequests,
     String? bio,
-    // Kişisel bilgiler
+    // YENİ EKLENEN ALANLAR
     String? favoriteTeam,
     String? country,
-    String? favoriteSport,
-    String? favoriteMeal,
-    // Sosyal medya platformları
     String? instagram,
     String? twitter,
-    String? facebook,
-    String? tiktok,
-    String? kick,
-    String? twitch,
-    String? discord,
-    String? whatsapp,
-    String? spotify,
-    // Takip sistemi
-    bool? isFollowing,
   }) {
     return UserModel(
       name: name ?? this.name,
@@ -378,23 +305,11 @@ class UserModel {
       isProfilePublic: isProfilePublic ?? this.isProfilePublic,
       allowFriendRequests: allowFriendRequests ?? this.allowFriendRequests,
       bio: bio ?? this.bio,
-      // Kişisel bilgiler
+      // YENİ EKLENEN ALANLAR
       favoriteTeam: favoriteTeam ?? this.favoriteTeam,
       country: country ?? this.country,
-      favoriteSport: favoriteSport ?? this.favoriteSport,
-      favoriteMeal: favoriteMeal ?? this.favoriteMeal,
-      // Sosyal medya platformları
       instagram: instagram ?? this.instagram,
       twitter: twitter ?? this.twitter,
-      facebook: facebook ?? this.facebook,
-      tiktok: tiktok ?? this.tiktok,
-      kick: kick ?? this.kick,
-      twitch: twitch ?? this.twitch,
-      discord: discord ?? this.discord,
-      whatsapp: whatsapp ?? this.whatsapp,
-      spotify: spotify ?? this.spotify,
-      // Takip sistemi
-      isFollowing: isFollowing ?? this.isFollowing,
     );
   }
 }

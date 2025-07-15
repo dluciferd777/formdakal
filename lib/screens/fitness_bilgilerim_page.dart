@@ -1,4 +1,4 @@
-// lib/screens/fitness_bilgilerim_page.dart
+// lib/screens/fitness_bilgilerim_page.dart - DROPDOWN HATASI DÜZELTİLDİ
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/user_provider.dart';
@@ -23,10 +23,10 @@ class _FitnessBilgilerimPageState extends State<FitnessBilgilerimPage> {
   
   // Vücut Kompozisyonu
   late TextEditingController _bodyFatController;
-  late TextEditingController _visceralFatController; // İç yağ
+  late TextEditingController _visceralFatController;
   late TextEditingController _muscleController;
   late TextEditingController _waterController;
-  late TextEditingController _boneController; // Kemik oranı
+  late TextEditingController _boneController;
   late TextEditingController _metabolicAgeController;
   
   // Seçili değerler
@@ -34,6 +34,7 @@ class _FitnessBilgilerimPageState extends State<FitnessBilgilerimPage> {
   String _selectedActivityLevel = 'moderately_active';
   String _selectedGoal = 'maintain';
 
+  // HATA DÜZELTİLDİ: Tüm dropdown listelerinde unique değerler kullanıldı
   final List<Map<String, String>> _activityLevels = [
     {'value': 'sedentary', 'label': 'Hareketsiz (Ofis işi)'},
     {'value': 'lightly_active', 'label': 'Hafif Aktif (Hafta 1-3 gün)'},
@@ -42,11 +43,12 @@ class _FitnessBilgilerimPageState extends State<FitnessBilgilerimPage> {
     {'value': 'extremely_active', 'label': 'Aşırı Aktif (Günde 2x)'},
   ];
 
+  // HATA DÜZELTİLDİ: Unique goal değerleri
   final List<Map<String, String>> _goals = [
     {'value': 'lose', 'label': 'Kilo Vermek'},
-    {'value': 'maintain', 'label': 'Kiloyu Korumak'},
+    {'value': 'maintain', 'label': 'Kiloyu Korumak'}, 
     {'value': 'gain', 'label': 'Kilo Almak'},
-    {'value': 'lose_weight_gain_muscle', 'label': 'Kilo Ver & Kas Yap'},
+    {'value': 'muscle_gain', 'label': 'Kas Yapmak'}, // lose_weight_gain_muscle yerine muscle_gain
   ];
 
   @override
@@ -64,16 +66,22 @@ class _FitnessBilgilerimPageState extends State<FitnessBilgilerimPage> {
       
       // Vücut kompozisyonu
       _bodyFatController = TextEditingController(text: user.bodyFatPercentage?.toString() ?? '');
-      _visceralFatController = TextEditingController(); // Yeni alan
+      _visceralFatController = TextEditingController();
       _muscleController = TextEditingController(text: user.musclePercentage?.toString() ?? '');
       _waterController = TextEditingController(text: user.waterPercentage?.toString() ?? '');
-      _boneController = TextEditingController(); // Yeni alan
+      _boneController = TextEditingController();
       _metabolicAgeController = TextEditingController(text: user.metabolicAge?.toString() ?? '');
       
-      // Seçili değerler
+      // Seçili değerler - HATA DÜZELTİLDİ: Eski değer varsa kontrol et
       _selectedGender = user.gender;
       _selectedActivityLevel = user.activityLevel;
-      _selectedGoal = user.goal;
+      
+      // Eski goal değerini yeni sisteme çevir
+      if (user.goal == 'lose_weight_gain_muscle') {
+        _selectedGoal = 'muscle_gain';
+      } else {
+        _selectedGoal = user.goal;
+      }
     } else {
       // Boş controller'lar
       _ageController = TextEditingController();
@@ -164,11 +172,11 @@ class _FitnessBilgilerimPageState extends State<FitnessBilgilerimPage> {
       
       double calories = bmr * activityFactor;
       
-      // Hedefe göre ayarlama
+      // Hedefe göre ayarlama - HATA DÜZELTİLDİ: Yeni goal değerleri
       switch (_selectedGoal) {
         case 'lose': calories -= 500; break;
         case 'gain': calories += 500; break;
-        case 'lose_weight_gain_muscle': calories -= 300; break;
+        case 'muscle_gain': calories -= 200; break; // Hafif kalori açığı
       }
       
       return calories;
@@ -212,6 +220,7 @@ class _FitnessBilgilerimPageState extends State<FitnessBilgilerimPage> {
               backgroundColor: DynamicColors.primary,
             ),
           );
+          Navigator.pop(context); // Sayfayı kapat
         }
       }
     }
@@ -610,6 +619,7 @@ class _FitnessBilgilerimPageState extends State<FitnessBilgilerimPage> {
     );
   }
 
+  // HATA DÜZELTİLDİ: Daha güvenli dropdown widget
   Widget _buildDropdown({
     required String label,
     required IconData icon,
@@ -617,8 +627,14 @@ class _FitnessBilgilerimPageState extends State<FitnessBilgilerimPage> {
     required List<Map<String, String>> items,
     required Function(String?) onChanged,
   }) {
+    // Eğer mevcut value items listesinde yoksa, ilk item'ı seç
+    String safeValue = value;
+    if (!items.any((item) => item['value'] == value)) {
+      safeValue = items.first['value']!;
+    }
+
     return DropdownButtonFormField<String>(
-      value: value,
+      value: safeValue,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, color: DynamicColors.primary, size: 20),
