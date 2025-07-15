@@ -1,29 +1,43 @@
-// lib/providers/step_counter_provider.dart - HATASIZ VERSİYON
+// lib/providers/step_counter_provider.dart - USER VERİLERİNİ KULLANIYOR
 import 'dart:async';
-import 'dart:typed_data'; // Int64List için eklendi
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pedometer/pedometer.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../services/calorie_service.dart';
+import '../providers/user_provider.dart';
 
 class StepCounterProvider with ChangeNotifier {
   StreamSubscription<StepCount>? _stepCountSubscription;
+  UserProvider? _userProvider; // UserProvider referansı
 
   int _dailySteps = 0;
   String _permissionStatus = 'Başlatılıyor...';
-  
-  final int _goal = 8000;
   bool _goalReachedNotified = false;
   final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
 
   int get dailySteps => _dailySteps;
   String get permissionStatus => _permissionStatus;
-  int get goal => _goal;
+  
+  // Dinamik hedef - kullanıcının aktivite seviyesine göre
+  int get goal {
+    if (_userProvider?.user != null) {
+      return _userProvider!.user!.dailyStepGoal;
+    }
+    return 8000; // Varsayılan
+  }
 
   StepCounterProvider() {
     _initialize();
+  }
+
+  // UserProvider bağlantısı
+  void setUserProvider(UserProvider userProvider) {
+    _userProvider = userProvider;
+    notifyListeners();
   }
 
   Future<void> _initialize() async {
@@ -50,7 +64,6 @@ class StepCounterProvider with ChangeNotifier {
   }
 
   Future<void> _createNotificationChannels() async {
-    // Sürekli bildirim kanalı
     const AndroidNotificationChannel persistentChannel = AndroidNotificationChannel(
       'formdakal_step_channel',
       'FormdaKal Adım Sayar',
@@ -60,7 +73,6 @@ class StepCounterProvider with ChangeNotifier {
       playSound: false,
     );
 
-    // Hedef bildirimi kanalı - ses ve titreşim aktif
     const AndroidNotificationChannel goalChannel = AndroidNotificationChannel(
       'formdakal_goal_channel',
       'FormdaKal Hedef Bildirimleri',
@@ -77,13 +89,11 @@ class StepCounterProvider with ChangeNotifier {
     await _notificationsPlugin
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(goalChannel);
-
-    print('✅ Bildirim kanalları oluşturuldu');
   }
 
   Future<void> _requestPermissions() async {
     var activityStatus = await Permission.activityRecognition.request();
-    await Permission.notification.request(); // Kullanılmayan değişken kaldırıldı
+    await Permission.notification.request();
     
     if (await Permission.scheduleExactAlarm.isDenied) {
       await Permission.scheduleExactAlarm.request();
@@ -139,7 +149,7 @@ class StepCounterProvider with ChangeNotifier {
   }
 
   void _checkGoal() async {
-    if (_dailySteps >= _goal && !_goalReachedNotified) {
+    if (_dailySteps >= goal && !_goalReachedNotified) {
       await _showGoalReachedNotification();
       _goalReachedNotified = true;
       
@@ -165,16 +175,14 @@ class StepCounterProvider with ChangeNotifier {
     await _notificationsPlugin.show(
       0,
       'FormdaKal: $_dailySteps adım',
-      'Hedef: $_goal adım',
+      'Hedef: $goal adım',
       const NotificationDetails(android: details),
     );
   }
 
   Future<void> _showGoalReachedNotification() async {
-    // Haptic feedback ekle
     await HapticFeedback.heavyImpact();
     
-    // Titreşim pattern - Int64List yerine List<int> kullan
     final vibrationPattern = <int>[0, 1000, 500, 1000];
     
     final AndroidNotificationDetails details = AndroidNotificationDetails(
@@ -185,7 +193,7 @@ class StepCounterProvider with ChangeNotifier {
       priority: Priority.high,
       enableVibration: true,
       playSound: true,
-      vibrationPattern: Int64List.fromList(vibrationPattern), // Doğru kullanım
+      vibrationPattern: Int64List.fromList(vibrationPattern),
       autoCancel: false,
       ongoing: false,
       ticker: 'Hedef Tamamlandı!',
@@ -195,15 +203,12 @@ class StepCounterProvider with ChangeNotifier {
     await _notificationsPlugin.show(
       1,
       '🎉 TEBRİKLER!',
-      'Harika! $_goal adım hedefini tamamladın! 🚀',
-      NotificationDetails(android: details), // const kaldırıldı
+      'Harika! $goal adım hedefini tamamladın! 🚀',
+      NotificationDetails(android: details),
       payload: 'goal_reached',
     );
-
-    print('🎯 Hedef bildirimi gönderildi: $_dailySteps adım');
   }
 
-  // Test bildirimi fonksiyonu
   Future<void> sendTestNotification() async {
     await HapticFeedback.heavyImpact();
     
@@ -223,20 +228,62 @@ class StepCounterProvider with ChangeNotifier {
       999,
       '🧪 Test Bildirimi',
       'Bu bir test bildirimidir. Ses ve titreşim çalışıyor mu?',
-      NotificationDetails(android: details), // const kaldırıldı
+      NotificationDetails(android: details),
     );
   }
 
+  // GELİŞTİRİLMİŞ KALORİ HESAPLAMASI - UserProvider verilerini kullanıyor
   double getCaloriesFromSteps() {
+    if (_userProvider?.user != null && _dailySteps > 0) {
+      final user = _userProvider!.user!;
+      return CalorieService.calculateAdvancedStepCalories(
+        steps: _dailySteps,
+        weight: user.weight,
+        height: user.height,
+        age: user.age,
+        gender: user.gender,
+        activityLevel: user.activityLevel,
+      );
+    }
+    // Varsayılan hesaplama
     return _dailySteps * 0.04;
   }
   
   double getDistanceFromSteps() {
+    if (_userProvider?.user != null) {
+      final user = _userProvider!.user!;
+      // Cinsiyet bazlı adım uzunluğu
+      double strideLength;
+      if (user.gender == 'male') {
+        strideLength = user.height * 0.415; // cm
+      } else {
+        strideLength = user.height * 0.413; // cm
+      }
+      return (_dailySteps * strideLength / 100) / 1000; // km
+    }
+    // Varsayılan hesaplama
     return _dailySteps * 0.000762;
   }
   
   int getActiveMinutes() {
-    return (_dailySteps / 100).round();
+    // Daha gerçekçi hesaplama - 100 adım = 1 dakika yerine 120 adım = 1 dakika
+    return (_dailySteps / 120).round();
+  }
+
+  // Adım detaylarını alma
+  Map<String, dynamic> getStepDetails() {
+    if (_userProvider?.user != null && _dailySteps > 0) {
+      final user = _userProvider!.user!;
+      return CalorieService.getStepCalorieDetails(
+        steps: _dailySteps,
+        weight: user.weight,
+        height: user.height,
+        age: user.age,
+        gender: user.gender,
+        activityLevel: user.activityLevel,
+      );
+    }
+    return {};
   }
 
   @override

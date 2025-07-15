@@ -32,12 +32,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
   late TextEditingController _favoriteSportController;
   late TextEditingController _favoriteTeamController;
 
-  // Sosyal Medya Controller'ları (5 platform)
+  // Sosyal Medya Controller'ları (9 platform)
   late TextEditingController _instagramController;
   late TextEditingController _twitterController;
-  late TextEditingController _youtubeController;
   late TextEditingController _facebookController;
   late TextEditingController _tiktokController;
+  late TextEditingController _kickController;
+  late TextEditingController _twitchController;
+  late TextEditingController _discordController;
+  late TextEditingController _whatsappController;
+  late TextEditingController _spotifyController;
 
   // Aktivite Seviyesi ve Hedef
   String _selectedActivityLevel = 'moderately_active';
@@ -84,12 +88,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
       _favoriteSportController = TextEditingController(text: user.favoriteSport ?? '');
       _favoriteTeamController = TextEditingController(text: user.favoriteTeam ?? '');
 
-      // Sosyal Medya (5 platform)
+      // Sosyal Medya (9 platform)
       _instagramController = TextEditingController(text: user.instagram ?? '');
       _twitterController = TextEditingController(text: user.twitter ?? '');
-      _youtubeController = TextEditingController(text: user.youtube ?? '');
       _facebookController = TextEditingController(text: user.facebook ?? '');
       _tiktokController = TextEditingController(text: user.tiktok ?? '');
+      _kickController = TextEditingController(text: user.kick ?? '');
+      _twitchController = TextEditingController(text: user.twitch ?? '');
+      _discordController = TextEditingController(text: user.discord ?? '');
+      _whatsappController = TextEditingController(text: user.whatsapp ?? '');
+      _spotifyController = TextEditingController(text: user.spotify ?? '');
 
       // Seçili değerler
       _selectedActivityLevel = user.activityLevel;
@@ -115,9 +123,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
       // Boş sosyal medya
       _instagramController = TextEditingController();
       _twitterController = TextEditingController();
-      _youtubeController = TextEditingController();
       _facebookController = TextEditingController();
       _tiktokController = TextEditingController();
+      _kickController = TextEditingController();
+      _twitchController = TextEditingController();
+      _discordController = TextEditingController();
+      _whatsappController = TextEditingController();
+      _spotifyController = TextEditingController();
     }
   }
 
@@ -136,9 +148,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _favoriteTeamController.dispose();
     _instagramController.dispose();
     _twitterController.dispose();
-    _youtubeController.dispose();
     _facebookController.dispose();
     _tiktokController.dispose();
+    _kickController.dispose();
+    _twitchController.dispose();
+    _discordController.dispose();
+    _whatsappController.dispose();
+    _spotifyController.dispose();
     super.dispose();
   }
 
@@ -253,12 +269,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
           favoriteSport: _favoriteSportController.text.trim().isNotEmpty ? _favoriteSportController.text.trim() : null,
           favoriteTeam: _favoriteTeamController.text.trim().isNotEmpty ? _favoriteTeamController.text.trim() : null,
           
-          // Sosyal medya (5 platform)
+          // Sosyal medya (9 platform)
           instagram: _instagramController.text.trim().isNotEmpty ? _instagramController.text.trim() : null,
           twitter: _twitterController.text.trim().isNotEmpty ? _twitterController.text.trim() : null,
-          youtube: _youtubeController.text.trim().isNotEmpty ? _youtubeController.text.trim() : null,
           facebook: _facebookController.text.trim().isNotEmpty ? _facebookController.text.trim() : null,
           tiktok: _tiktokController.text.trim().isNotEmpty ? _tiktokController.text.trim() : null,
+          kick: _kickController.text.trim().isNotEmpty ? _kickController.text.trim() : null,
+          twitch: _twitchController.text.trim().isNotEmpty ? _twitchController.text.trim() : null,
+          discord: _discordController.text.trim().isNotEmpty ? _discordController.text.trim() : null,
+          whatsapp: _whatsappController.text.trim().isNotEmpty ? _whatsappController.text.trim() : null,
+          spotify: _spotifyController.text.trim().isNotEmpty ? _spotifyController.text.trim() : null,
         );
         
         // UserProvider'ı güncelle
@@ -496,13 +516,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
               platform: 'twitter'
             ),
             _buildSocialMediaField(
-              controller: _youtubeController,
-              label: 'YouTube',
-              icon: FontAwesomeIcons.youtube,
-              hint: 'kanal adı veya URL',
-              platform: 'youtube'
-            ),
-            _buildSocialMediaField(
               controller: _facebookController,
               label: 'Facebook',
               icon: FontAwesomeIcons.facebook,
@@ -515,6 +528,41 @@ class _EditProfilePageState extends State<EditProfilePage> {
               icon: FontAwesomeIcons.tiktok,
               hint: 'kullaniciadi',
               platform: 'tiktok'
+            ),
+            _buildSocialMediaField(
+              controller: _kickController,
+              label: 'Kick',
+              icon: FontAwesomeIcons.play,
+              hint: 'kullaniciadi',
+              platform: 'kick'
+            ),
+            _buildSocialMediaField(
+              controller: _twitchController,
+              label: 'Twitch',
+              icon: FontAwesomeIcons.twitch,
+              hint: 'kullaniciadi',
+              platform: 'twitch'
+            ),
+            _buildSocialMediaField(
+              controller: _discordController,
+              label: 'Discord',
+              icon: FontAwesomeIcons.discord,
+              hint: 'kullaniciadi#1234',
+              platform: 'discord'
+            ),
+            _buildSocialMediaField(
+              controller: _whatsappController,
+              label: 'WhatsApp',
+              icon: FontAwesomeIcons.whatsapp,
+              hint: 'telefon numarası',
+              platform: 'whatsapp'
+            ),
+            _buildSocialMediaField(
+              controller: _spotifyController,
+              label: 'Spotify',
+              icon: FontAwesomeIcons.spotify,
+              hint: 'kullaniciadi veya URL',
+              platform: 'spotify'
             ),
             const SizedBox(height: 50),
           ],

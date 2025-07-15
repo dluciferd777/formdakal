@@ -92,8 +92,16 @@ class ExerciseProvider with ChangeNotifier {
     final int dailySteps = _stepCounterProvider.dailySteps;
     
     if (dailySteps > 0 && userWeight > 0) {
-      stepCalories = CalorieService.calculateStepCalories(dailySteps, userWeight);
-    }
+if (_userProvider.user != null) {
+    stepCalories = CalorieService.calculateAdvancedStepCalories(
+    steps: dailySteps,
+    weight: _userProvider.user!.weight,
+    height: _userProvider.user!.height,
+    age: _userProvider.user!.age,
+    gender: _userProvider.user!.gender,
+    activityLevel: _userProvider.user!.activityLevel,
+  );
+}    }
     
     return exerciseCalories + stepCalories;
   }

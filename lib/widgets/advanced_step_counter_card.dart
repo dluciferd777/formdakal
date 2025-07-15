@@ -19,7 +19,7 @@ class AdvancedStepCounterCard extends StatelessWidget {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     // ADIM SAYAR VERİLERİ
-    final int stepGoal = user?.dailyStepGoal ?? 8000;
+    final int stepGoal = user?.dailyStepGoal ?? 6000;
     final int steps = stepProvider.dailySteps;
     final double stepProgress = (steps / stepGoal).clamp(0.0, 1.0);
 

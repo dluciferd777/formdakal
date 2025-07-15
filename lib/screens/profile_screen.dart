@@ -6,6 +6,7 @@ import '../providers/user_provider.dart';
 import '../utils/color_themes.dart';
 import '../widgets/branded_app_title.dart';
 import '../widgets/dynamic_app_bar.dart';
+import '../screens/fitness_bilgilerim_page.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -220,13 +221,15 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           _buildListTile(
-            icon: Icons.edit,
-            title: 'Profili Düzenle',
-            subtitle: 'Kişisel bilgilerinizi güncelleyin',
-            onTap: () {
-              // Profil düzenleme sayfasına git
-            },
-          ),
+             icon: Icons.fitness_center,
+             title: 'Fitness Bilgilerim',
+             subtitle: 'Kişisel bilgilerinizi güncelleyebilirsiniz',
+             onTap: () {
+               Navigator.push(context,
+               MaterialPageRoute(builder: (context) => const FitnessBilgilerimPage()),
+    );
+  },
+),
           _buildListTile(
             icon: Icons.fitness_center,
             title: 'Fit Profil',

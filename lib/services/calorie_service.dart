@@ -81,7 +81,22 @@ class CalorieService {
     final metValue = vo2 / 3.5; // VO2'yi MET'e çevir (1 MET = 3.5 ml/kg/dk)
     return metValue;
   }
-
+static double calculateUserMET({
+  required double weight,
+  required double height,
+  required int age,
+  required String gender,
+  required String activityLevel,
+}) {
+  final bmr = calculateBMR(
+    gender: gender, 
+    weight: weight, 
+    height: height, 
+    age: age
+  );
+  final activityFactor = activityFactors[activityLevel] ?? 1.55;
+  return (bmr * activityFactor) / (24 * 3.5);
+}
   static double calculateCardioCalories({
     required String exerciseType,
     required double userWeight,
