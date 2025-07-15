@@ -1,4 +1,4 @@
-// lib/main.dart - SOSYAL PROVIDER EKLENMİŞ VERSİYON
+// lib/main.dart (PROVIDER DÜZELTİLMİŞ VERSİYON + FitProfileProvider)
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,7 +13,7 @@ import 'package:formdakal/providers/step_counter_provider.dart';
 import 'package:formdakal/providers/theme_provider.dart';
 import 'package:formdakal/providers/user_provider.dart';
 import 'package:formdakal/providers/workout_plan_provider.dart';
-import 'package:formdakal/providers/social_provider.dart'; // YENİ EKLENEN
+import 'package:formdakal/providers/social_provider.dart'; // YENİ: Sosyal provider eklendi
 import 'package:formdakal/services/notification_service.dart';
 import 'package:formdakal/screens/achievements_screen.dart';
 import 'package:formdakal/screens/calorie_tracking_screen.dart';
@@ -32,7 +32,7 @@ import 'package:formdakal/screens/splash_screen.dart';
 import 'package:formdakal/screens/step_details_screen.dart';
 import 'package:formdakal/screens/workout_plan_details_screen.dart';
 import 'package:formdakal/screens/workout_plans_list_screen.dart';
-import 'package:formdakal/screens/fit_profile_screen.dart'; // YENİ EKLENEN
+import 'package:formdakal/screens/fit_profile_screen.dart'; // YENİ: Fit profile screen eklendi
 import 'package:formdakal/utils/color_themes.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -117,7 +117,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         ChangeNotifierProvider(create: (_) => ProgressPhotoProvider(widget.prefs)),
         ChangeNotifierProvider(create: (_) => AchievementProvider(widget.prefs)),
         ChangeNotifierProvider(create: (_) => StepCounterProvider()),
-        ChangeNotifierProvider(create: (_) => SocialProvider()), // YENİ EKLENEN
+        ChangeNotifierProvider(create: (_) => SocialProvider()), // YENİ: Sosyal provider eklendi
         
         // Bağımlılığı olan provider'lar
         ChangeNotifierProxyProvider<AchievementProvider, UserProvider>(
@@ -163,7 +163,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               '/fitness': (context) => const FitnessScreen(),
               '/food_calories': (context) => const FoodCaloriesScreen(),
               '/profile': (context) => const ProfileScreen(),
-              '/fit_profile': (context) => const FitProfileScreen(), // YENİ EKLENEN
+              '/fit_profile': (context) => const FitProfileScreen(), // YENİ: Fit profile route eklendi
               '/calorie_tracking': (context) => const CalorieTrackingScreen(),
               '/reminders': (context) => const ReminderScreen(),
               '/measurements': (context) => const MeasurementScreen(),

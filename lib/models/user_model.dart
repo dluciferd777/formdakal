@@ -37,6 +37,9 @@ class UserModel {
   String? country;
   String? instagram;
   String? twitter;
+  
+  // TAKİP SİSTEMİ İÇİN EKLENDİ
+  bool isFollowing;
 
   UserModel({
     required this.name,
@@ -65,6 +68,8 @@ class UserModel {
     this.country,
     this.instagram,
     this.twitter,
+    // TAKİP SİSTEMİ İÇİN EKLENDİ
+    this.isFollowing = false,
   }) : 
     dailyWaterIntake = dailyWaterIntake ?? {},
     friendsList = friendsList ?? [],
@@ -203,6 +208,8 @@ class UserModel {
       'country': country,
       'instagram': instagram,
       'twitter': twitter,
+      // TAKİP SİSTEMİ İÇİN EKLENDİ
+      'isFollowing': isFollowing,
     };
   }
 
@@ -234,6 +241,8 @@ class UserModel {
       country: json['country'],
       instagram: json['instagram'],
       twitter: json['twitter'],
+      // TAKİP SİSTEMİ İÇİN EKLENDİ
+      isFollowing: json['isFollowing'] ?? false,
     );
   }
 
@@ -276,6 +285,8 @@ class UserModel {
     String? country,
     String? instagram,
     String? twitter,
+    // TAKİP SİSTEMİ İÇİN EKLENDİ
+    bool? isFollowing,
   }) {
     return UserModel(
       name: name ?? this.name,
@@ -304,6 +315,8 @@ class UserModel {
       country: country ?? this.country,
       instagram: instagram ?? this.instagram,
       twitter: twitter ?? this.twitter,
+      // TAKİP SİSTEMİ İÇİN EKLENDİ
+      isFollowing: isFollowing ?? this.isFollowing,
     );
   }
 }
